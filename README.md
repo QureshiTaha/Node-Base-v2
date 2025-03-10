@@ -11,6 +11,8 @@
     API_PREFIX=/api/v1/
     JWT_SECRET=your_jwt_secret
     JWT_EXPIRES_IN=7d
+    ACCESS_LOGGING=false
+    ERROR_LOGGING=false
    ```
 4. Start the server using `npm start`.
 

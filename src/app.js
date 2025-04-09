@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 API_PREFIX = process.env.API_PREFIX;
 const http = require('http');
 var admin = require('firebase-admin');
+var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 
 module.exports = {
   start: async () => {
@@ -29,6 +30,9 @@ module.exports = {
       console.log('Logging disabled');
     }
 
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
 
     const corsOptions = {
       origin: '*',

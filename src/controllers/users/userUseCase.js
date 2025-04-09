@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
-const database = require('../../Modules/config');
 const sql = require('../../Modules/sqlHandler');
 sqlQuery = sql.query;
 const moment = require('moment');
@@ -66,8 +64,17 @@ module.exports = {
   },
   getUserByUserID: async function (userID) {
     try {
-      const driverOrderList = await sqlQuery(`SELECT * from db_users WHERE userID='${userID}'`);
-      if (driverOrderList) return driverOrderList;
+      const user = await sqlQuery(`SELECT * from db_users WHERE userID='${userID}'`);
+      if (user) return user;
+      return null;
+    } catch (error) {
+      return error;
+    }
+  },
+  getFcmTokenByUserID: async function (userID) {
+    try {
+      const fcmToken = await sqlQuery(`SELECT fcmToken from db_users WHERE userID='${userID}'`);
+      if (fcmToken) return fcmToken;
       return null;
     } catch (error) {
       return error;
@@ -101,6 +108,22 @@ module.exports = {
       return null;
     } catch (error) {
       return error;
+    }
+  },
+  checkIfExist: async function (userID) {
+    try {
+      const query = `SELECT count(1) as count FROM db_users WHERE userID =  ?`;
+      const result = await sqlQuery(query, [userID]);
+      console.log(result[0].count);
+
+      if (result.length > 0 && result[0].count > 0) {
+        return { success: true, data: result[0] };
+      } else {
+        return { success: false, message: 'User not found' };
+      }
+    } catch (error) {
+      console.error('Error getting user by ID:', error);
+      return { success: false, message: error.message };
     }
   }
 };

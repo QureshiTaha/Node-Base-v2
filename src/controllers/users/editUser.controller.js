@@ -16,7 +16,8 @@ module.exports = (dependencies) => {
         userDateOfBirth,
         userAccountApproved,
         userMeta,
-        userRole
+        userRole,
+        fcmToken
       } = req.body;
 
       if (!userID) {
@@ -74,6 +75,10 @@ module.exports = (dependencies) => {
       if (userMeta) {
         updateFields.push('userMeta = ?');
         values.push(JSON.stringify(userMeta));
+      }
+      if (fcmToken) {
+        updateFields.push('fcmToken = ?');
+        values.push(fcmToken);
       }
 
       if (updateFields.length === 0) {

@@ -47,6 +47,21 @@ module.exports = (dependencies) => {
         dataStore.userDeletedDate = moment(userDeletedDate).format('yyyy-MM-DD');
         dataStore.userMeta = userMeta;
 
+        // CHeck if the user already exists in the database
+        console.log("userEmail",userEmail);
+        const userExists = await userUseCase.getUserByUserEmail(userEmail);
+        if (userExists.length > 0) {
+          
+          throw new Error('User already exists with this email address');
+        }
+
+        if(userPhone){
+          const userExistsByPhone = await userUseCase.getUserByUserPhone(userPhone);
+          if (userExistsByPhone.length > 0) {
+            throw new Error('User already exists with this Phone Number');
+          }
+        }
+
         const response = await userUseCase.addUser(dataStore);
 
         res.send({ status: true, msg: 'success', content: response });

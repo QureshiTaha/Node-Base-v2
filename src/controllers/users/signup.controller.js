@@ -2,15 +2,19 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
 const userUseCase = require('./userUseCase');
+const Mail = require('../../Modules/email');
+const utils = require('../../Modules/utils');
 
 module.exports = (dependencies) => {
   return async (req, res, next) => {
+
+
     try {
       const userID = uuidv4();
       const userFirstName = req.body.userFirstName;
       const userSurname = req.body.userSurname;
       const userEmail = req.body.userEmail;
-      const userPassword = req.body.userPassword;
+      const userPassword = req.body.userPassword || utils.passwordGenerator();
       const userPhone = req.body.userPhone;
       const userAddressLine1 = req.body.userAddressLine1;
       const userAddressLine2 = req.body.userAddressLine2;
@@ -24,6 +28,7 @@ module.exports = (dependencies) => {
       const userAccountApproved = req.body.userAccountApproved || 1;
       const userDeletedDate = req.body.userDeletedDate;
       const userMeta = req.body.userMeta || {};
+      const sendMail = req.body.sendMail || false;
       let dataStore = {};
       if (!userPassword || !userEmail) {
         throw new Error('Please enter valid email and password');
@@ -48,14 +53,13 @@ module.exports = (dependencies) => {
         dataStore.userMeta = userMeta;
 
         // CHeck if the user already exists in the database
-        console.log("userEmail",userEmail);
         const userExists = await userUseCase.getUserByUserEmail(userEmail);
         if (userExists.length > 0) {
-          
+
           throw new Error('User already exists with this email address');
         }
 
-        if(userPhone){
+        if (userPhone) {
           const userExistsByPhone = await userUseCase.getUserByUserPhone(userPhone);
           if (userExistsByPhone.length > 0) {
             throw new Error('User already exists with this Phone Number');
@@ -63,6 +67,18 @@ module.exports = (dependencies) => {
         }
 
         const response = await userUseCase.addUser(dataStore);
+
+        if (sendMail) {
+          console.log("Sending Mail...");
+          await Mail.send({
+            userEmail: userEmail,
+            subject: 'Welcome to Task Manager! 🎉',
+            body: 'Hello ' + userFirstName + ' ' + userSurname + ',<br><br>Welcome to Task Manager! 🎉<br><br>You can now log in to your account using the following credentials:<br><br>Email: <strong>' + userEmail + '</strong><br>Password: <strong>' + userPassword + '</strong>',
+            mailerType: 1
+          });
+          console.log('User Created with Creds :', userEmail, userPassword);
+
+        }
 
         res.send({ status: true, msg: 'success', content: response });
       }

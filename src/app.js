@@ -15,6 +15,7 @@ API_PREFIX = process.env.API_PREFIX;
 const http = require('http');
 var admin = require('firebase-admin');
 var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
+const Mail = require('./Modules/email');
 
 module.exports = {
   start: async () => {
@@ -45,22 +46,11 @@ module.exports = {
       res.json('Welcome to API!');
     });
 
-    app.post('/api/v1/notification/send', async (req, res) => {
-      const { title, body, deviceID } = req.body;
-      const message = {
-        notification: {
-          title,
-          body
-        },
-        data: {
-          action: 'open_app',
-          update_id: '12345'
-        },
-        token: deviceID
-      };
-
+    app.post('/api/v1/mail/send', async (req, res) => {
+      const { subject, body, userEmail, mailerType } = req.body;
+      // mailerType 1 is gmail, 2 is iceweb
       try {
-        await admin.messaging().send(message);
+        Mail.send({ subject, body, userEmail, mailerType });
         console.log('Notification sent successfully');
         res.status(200).send('Notification sent successfully');
       } catch (error) {

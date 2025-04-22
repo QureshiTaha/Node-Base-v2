@@ -29,7 +29,7 @@ module.exports = (dependencies) => {
 
         async function getData() {
           return new Promise((resolve, reject) => {
-            sqlQuery(`SELECT * FROM db_users WHERE userEmail = '${userEmail}'`)
+            sqlQuery(`SELECT * FROM db_users WHERE userEmail = '${userEmail}' AND (userDeleted IS NULL OR userDeleted != 1)`)
               .then((result) => {
                 console.log(result);
                 if (result.length < 1) {

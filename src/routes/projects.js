@@ -1,5 +1,5 @@
 const express = require('express');
-const verifyToken = require('../Modules/authJwt');
+const { verifyToken } = require('../Modules/authJwt');
 const { projectController } = require('../controllers');
 
 const {
@@ -12,7 +12,7 @@ const {
 
 const router = express.Router();
 router.route('/').post(addProjectController);
-router.route('/').get(verifyToken, getAllProjectsController);
+router.route('/').get(getAllProjectsController);
 router.route('/edit/:projectID').put(editProjectController);
 router.route('/get/:projectID').get(getProjectByIDController);
 router.route('/:projectID').delete(deleteProjectController);

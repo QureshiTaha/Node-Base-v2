@@ -2,28 +2,30 @@ const sql = require('../../Modules/sqlHandler');
 sqlQuery = sql.query;
 const moment = require('moment');
 const bcrypt = require('bcrypt');
+
+
+/**
+* hashPassword function to hash encrypt the password
+* @param {*} userPassword
+* @returns
+*/
+async function hashPassword(userPassword) {
+  const password = userPassword;
+  const saltRounds = 10;
+  const hashedPassword = await new Promise((resolve, reject) => {
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+      bcrypt.hash(password, salt, function (err, hash) {
+        if (err) reject(err);
+        resolve(hash);
+      });
+    });
+  });
+  return hashedPassword;
+}
+
 module.exports = {
   addUser: async function (user) {
     try {
-      /**
-       * hashPassword function to hash the password
-       * @param {*} userPassword
-       * @returns
-       */
-      async function hashPassword(userPassword) {
-        const password = userPassword;
-        const saltRounds = 10;
-        const hashedPassword = await new Promise((resolve, reject) => {
-          bcrypt.genSalt(saltRounds, (err, salt) => {
-            bcrypt.hash(password, salt, function (err, hash) {
-              if (err) reject(err);
-              resolve(hash);
-            });
-          });
-        });
-        return hashedPassword;
-      }
-
       user.hashPassword = await hashPassword(user.userPassword);
       const addUser = await sqlQuery(
         `INSERT INTO db_users (
@@ -60,6 +62,35 @@ module.exports = {
       return null;
     } catch (error) {
       throw new Error(`Could not add user with userID:${user.userID} ${error}`);
+    }
+  },
+  updatePassword: async function (user) {
+    try {
+      user.hashPassword = await hashPassword(user.userPassword);
+      const updatePassword = await sqlQuery(
+        `UPDATE db_users SET 
+          userPassword = '${user.hashPassword}'
+        WHERE userID = '${user.userID}'`
+      );
+      if (updatePassword) return user;
+      return null;
+    } catch (error) {
+      throw new Error(`Could not update user with userID:${user.userID} ${error}`);
+    }
+  },
+  deleteUser: async function (user) {
+    try {
+      const userDeletedDate = moment().format('YYYY-MM-DD HH:mm:ss');
+      const updatePassword = await sqlQuery(
+        `UPDATE db_users SET 
+          userDeleted = '1',
+          userDeletedDate = '${userDeletedDate}'
+        WHERE userID = '${user.userID}'`
+      );
+      if (updatePassword) return user;
+      return null;
+    } catch (error) {
+      throw new Error(`Could not update user with userID:${user.userID} ${error}`);
     }
   },
   getUserByUserID: async function (userID) {
@@ -100,11 +131,11 @@ module.exports = {
   },
   getAllUsers: async function (search = '') {
     try {
-      const secretRoomUserList = await sqlQuery(
+      const userList = await sqlQuery(
         `SELECT * from db_users where userFirstName like '%${search}%' or userSurname like '%${search}%' or userEmail like '%${search}%'
-        or userPhone like '%${search}%'`
+        or userPhone like '%${search}%' AND (userDeleted IS NULL OR userDeleted != 1)`
       );
-      if (secretRoomUserList) return secretRoomUserList;
+      if (userList) return userList;
       return null;
     } catch (error) {
       return error;
@@ -112,7 +143,7 @@ module.exports = {
   },
   checkIfExist: async function (userID) {
     try {
-      const query = `SELECT count(1) as count FROM db_users WHERE userID =  ?`;
+      const query = `SELECT count(1) as count FROM db_users WHERE userID =  ? AND (userDeleted IS NULL OR userDeleted != 1)`;
       const result = await sqlQuery(query, [userID]);
       console.log(result[0].count);
 

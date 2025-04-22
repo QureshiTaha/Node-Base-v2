@@ -1,6 +1,6 @@
 const express = require('express');
 const { userController, testController } = require('../controllers');
-const verifyToken = require('../Modules/authJwt');
+const { verifyToken, isAdmin } = require('../Modules/authJwt');
 const refreshToken = require('../Modules/refreshToken');
 const {
   loginController,
@@ -9,13 +9,17 @@ const {
   editUserController,
   getAllUsersController,
   getUserByUserEmailController,
-  getUserByUserPhoneController
+  getUserByUserPhoneController,
+  changePasswordController,
+  deleteUsersController
 } = userController();
 
 const { testingController } = testController();
 
 const router = express.Router();
 router.route('/').get(testingController);
+router.route('/:userID').delete(isAdmin, deleteUsersController);
+router.route('/change-password').post(changePasswordController);
 router.route('/refresh-token').post(refreshToken);
 router.route('/login').post(loginController);
 router.route('/signup').post(signupController);

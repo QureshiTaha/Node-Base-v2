@@ -51,11 +51,11 @@ module.exports = {
       // mailerType 1 is gmail, 2 is iceweb
       try {
         Mail.send({ subject, body, userEmail, mailerType });
-        console.log('Notification sent successfully');
-        res.status(200).send('Notification sent successfully');
+        console.log('Mail sent successfully');
+        res.status(200).send('Mail sent successfully');
       } catch (error) {
-        console.log('Error sending notification: ', error);
-        res.status(500).send('Error sending notification');
+        console.log('Error sending Mail: ', error);
+        res.status(500).send('Error sending Mail');
       }
     });
 

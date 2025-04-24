@@ -23,7 +23,7 @@ module.exports = (dependencies) => {
         LEFT JOIN db_users ON db_tasks.created_by = db_users.userID
         LEFT JOIN db_projects ON db_tasks.taskProjectID = db_projects.projectID
         LEFT JOIN db_task_assignments ON db_tasks.taskID = db_task_assignments.task_id
-        WHERE db_task_assignments.assigned_to = ? || db_task_assignments.assigned_by = ? || db_tasks.created_by = ?
+        WHERE db_tasks.isDeleted = 0 AND db_task_assignments.assigned_to = ? || db_task_assignments.assigned_by = ? || db_tasks.created_by = ?
       `;
 
       // Add search condition if provided

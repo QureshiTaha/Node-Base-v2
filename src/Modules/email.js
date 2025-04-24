@@ -4,13 +4,27 @@ var nodemailer = require('nodemailer');
 module.exports = {
   send: async function ({ subject, body, userID, userEmail, mailerType }) {
     try {
+      console.log("mailerType", mailerType);
+
       const transporter =
         mailerType == 1 ?
+          // nodemailer.createTransport({
+          //   service: 'gmail',
+          //   auth: {
+          //     user: 'lincpaysolution+noreply@gmail.com',
+          //     pass: 'fvya yykr sqwe pccm'
+          //   }
+          // }) :
           nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.zoho.in',
+            port: 587,
+            secureConnection: false,
+            tls: {
+              ciphers: 'SSLv3'
+            },
             auth: {
-              user: 'lincpaysolution+noreply@gmail.com',
-              pass: 'fvya yykr sqwe pccm'
+              user: 'info@globots.in',
+              pass: 'Globot@2024'
             }
           }) :
           nodemailer.createTransport({
@@ -40,7 +54,7 @@ module.exports = {
       }
 
       const mailOptions = {
-        from: mailerType == 1 ? 'noreply@Task Manager <lincpaysolution+noreply@gmail.com>' : 'noreply@Task Manager <taskmanagement@iceweb.in>',
+        from: mailerType == 1 ? 'Task Manager <info@globots.in>' : 'noreply@Task Manager <taskmanagement@iceweb.in>',
         to: receiverEmail.toString().trim(),
         subject: subject || '📩 Message from Task Manager',
         headers: {

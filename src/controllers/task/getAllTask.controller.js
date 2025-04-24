@@ -23,7 +23,7 @@ module.exports = (dependencies) => {
 
       // Add search condition if provided
       if (_search) {
-        query += ` WHERE (db_tasks.title LIKE ? OR db_tasks.description LIKE ?) `;
+        query += ` WHERE db_tasks.isDeleted = 0 AND (db_tasks.title LIKE ? OR db_tasks.description LIKE ?) `;
       }
 
       query += `

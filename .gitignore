@@ -130,3 +130,4 @@ dist
 package-lock.json
 NODE.zip
 taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json
+uploads/*

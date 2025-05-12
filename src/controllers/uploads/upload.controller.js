@@ -1,7 +1,42 @@
 const path = require('path');
 const fs = require('fs');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+const ffprobePath = require('ffprobe-static').path;
 const { sqlQuery } = require('../../Modules/sqlHandler');
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+// Function to generate thumbnail
+const generateThumbnail = async (videoPath, thumbnailName) => {
 
+  const thumbnailDir = path.join(__dirname, '../../../uploads');
+  console.log('Generating thumbnail...');
+  console.log(videoPath, thumbnailName);
+
+
+  await
+    ffmpeg(videoPath)
+      .on('end', () => {
+        console.log('✅ Thumbnail generated!');
+      })
+      .on('error', (err) => {
+        console.error('❌ FFmpeg error:', err.message);
+      })
+      .screenshots({
+        timestamps: ['10%'], // at 5 seconds
+        filename: thumbnailName,
+        folder: thumbnailDir,
+        size: '320x240'
+      });
+
+  //   });
+  // } catch (error) {
+  //   console.log(">>>",error);
+  //   ;
+  // }
+};
+
+// Single file upload controller
 const uploadFile = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({
@@ -10,28 +45,62 @@ const uploadFile = async (req, res) => {
     });
   }
 
-  //  validations
+  // Validation
   if (!req.body.userID) return res.status(400).json({ success: false, message: 'UserID is required' });
   const user = await sqlQuery(`SELECT id FROM db_users WHERE userID = '${req.body.userID}'`);
   if (user.length === 0) {
+    // User not found, delete uploaded file
     fs.unlink(path.join(__dirname, '../../../uploads', req.file.filename), (err) => {
       if (err) {
         return res.status(400).json({ success: false, message: 'File not found or already deleted' });
       }
     });
+    return res.status(400).json({ success: false, message: 'User not found' });
   } else {
-    sqlQuery(
-      `INSERT INTO db_uploads (userID, filePath) VALUES ('${req.body.userID}', '/uploads/${req.file.filename}')`
-    );
-  }
+    // Check if the uploaded file is a video and generate a thumbnail
+    if (req.file.mimetype.startsWith('video/')) {
+      const videoPath = path.join(__dirname, '../../../uploads', req.file.filename);
+      const thumbnailPath = path.join(__dirname, '../../../uploads', `${req.file.filename}-thumbnail.png`);
 
-  res.status(200).json({
-    success: true,
-    message: 'File uploaded successfully!',
-    filePath: `/uploads/${req.file.filename}`
-  });
+
+      try {
+        // Generate the thumbnail
+        await generateThumbnail(videoPath, `${req.file.filename}-thumbnail.png`);
+
+        // Store video and thumbnail paths in the database
+        await sqlQuery(
+          `INSERT INTO db_uploads (userID, filePath, thumbnailPath) VALUES ('${req.body.userID}', '/uploads/${req.file.filename}-thumbnail.png', '/uploads/${req.file.filename}-thumbnail.png')`
+        );
+
+        res.status(200).json({
+          success: true,
+          message: 'Video uploaded and thumbnail generated successfully!',
+          filePath: `/uploads/${req.file.filename}`,
+          thumbnailPath: `/uploads/${req.file.filename}-thumbnail.png`
+        });
+      } catch (error) {
+        // Delete video file if thumbnail generation fails
+        console.log(error);
+
+        fs.unlink(path.join(__dirname, '../../../uploads', req.file.filename), () => { });
+        return res.status(500).json({ success: false, message: 'Error generating thumbnail' });
+      }
+    } else {
+      // If it's not a video, just store it in the database without generating a thumbnail
+      await sqlQuery(
+        `INSERT INTO db_uploads (userID, filePath) VALUES ('${req.body.userID}', '/uploads/${req.file.filename}')`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'File uploaded successfully!',
+        filePath: `/uploads/${req.file.filename}`
+      });
+    }
+  }
 };
 
+// Multiple file upload controller
 const uploadMultipleFiles = async (req, res, next) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({
@@ -39,10 +108,12 @@ const uploadMultipleFiles = async (req, res, next) => {
       message: 'No files uploaded!'
     });
   }
-  //  validations
+
+  // Validation
   if (!req.body.userID) return res.status(400).json({ success: false, message: 'UserID is required' });
   const user = await sqlQuery(`SELECT id FROM db_users WHERE userID = '${req.body.userID}'`);
   if (user.length === 0) {
+    // User not found, delete uploaded files
     req.files.forEach((file) => {
       fs.unlink(path.join(__dirname, '../../../uploads', file.filename), (err) => {
         if (err) {
@@ -52,18 +123,42 @@ const uploadMultipleFiles = async (req, res, next) => {
     });
     return res.status(400).json({ success: false, message: 'User not found' });
   } else {
-    req.files.forEach((file) => {
-      sqlQuery(`INSERT INTO db_uploads (userID, filePath) VALUES ('${req.body.userID}', '/uploads/${file.filename}')`);
+    const filePaths = [];
+    for (const file of req.files) {
+      // Check if the uploaded file is a video and generate a thumbnail
+      if (file.mimetype.startsWith('video/')) {
+        const videoPath = path.join(__dirname, '../../../uploads', file.filename);
+
+        try {
+          // Generate the thumbnail for each video
+          await generateThumbnail(videoPath, `${req.file.filename}-thumbnail.png`);
+
+          // Store the video and thumbnail paths in the database
+          await sqlQuery(
+            `INSERT INTO db_uploads (userID, filePath, thumbnailPath) VALUES ('${req.body.userID}', '/uploads/${file.filename}', '/uploads/${req.file.filename}-thumbnail.png')`
+          );
+
+          filePaths.push({ filePath: `/uploads/${file.filename}`, thumbnailPath: `/uploads/${req.file.filename}-thumbnail.png` });
+        } catch (error) {
+          // Delete video file if thumbnail generation fails
+          fs.unlink(path.join(__dirname, '../../../uploads', file.filename), () => { });
+          return res.status(500).json({ success: false, message: 'Error generating thumbnail for video' });
+        }
+      } else {
+        // If it's not a video, just store it in the database without generating a thumbnail
+        await sqlQuery(
+          `INSERT INTO db_uploads (userID, filePath) VALUES ('${req.body.userID}', '/uploads/${file.filename}')`
+        );
+        filePaths.push(`/uploads/${file.filename}`);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Files uploaded successfully!',
+      filePaths
     });
   }
-
-  const filePaths = req.files.map((file) => `/uploads/${file.filename}`);
-
-  res.status(200).json({
-    success: true,
-    message: 'Files uploaded successfully!',
-    filePaths: filePaths
-  });
 };
 
 // Delete a single file

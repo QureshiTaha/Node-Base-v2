@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 require('https').globalAgent.options.ca = require('ssl-root-cas').create();
 
 const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const app = express();
 const port = process.env.NODE_PORT || 5000;
@@ -13,8 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 API_PREFIX = process.env.API_PREFIX;
 const http = require('http');
-var admin = require('firebase-admin');
-var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
+// var admin = require('firebase-admin');
+// var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 const Mail = require('./Modules/email');
 
 module.exports = {
@@ -31,9 +32,9 @@ module.exports = {
       console.log('Logging disabled');
     }
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    // admin.initializeApp({
+    //   credential: admin.credential.cert(serviceAccount)
+    // });
 
     const corsOptions = {
       origin: '*',
@@ -60,6 +61,44 @@ module.exports = {
     });
 
     app.use('/uploads', express.static('uploads'));
+
+    app.get('/reels/uploads/:filename', (req, res) => {
+      const filePath = path.join(__dirname, '../uploads', req.params.filename);
+      
+      fs.stat(filePath, (err, stats) => {
+        if (err) return res.sendStatus(404);
+
+        const range = req.headers.range;
+        const fileSize = stats.size;
+        const contentType = "video/mp4";
+
+        if (range) {
+          const parts = range.replace(/bytes=/, "").split("-");
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+          const chunkSize = (end - start) + 1;
+
+          const file = fs.createReadStream(filePath, { start, end });
+
+          res.writeHead(206, {
+            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": chunkSize,
+            "Content-Type": contentType,
+          });
+
+          file.pipe(res);
+        } else {
+          // Fallback: send full file
+          res.writeHead(200, {
+            "Content-Length": fileSize,
+            "Content-Type": contentType,
+          });
+
+          fs.createReadStream(filePath).pipe(res);
+        }
+      });
+    });
 
     app.use(API_PREFIX, routes);
     var server = http.createServer(app);

@@ -140,3 +140,18 @@ CREATE TABLE
         `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
         PRIMARY KEY (`id`)
     );
+
+	CREATE TABLE `db_reels` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `reelId` varchar(100) NOT NULL,
+        `filepath` varchar(255) NOT NULL,
+        `userID` varchar(100) NOT NULL,
+        `title` varchar(100) DEFAULT 'untitled',
+        `description` varchar(100) NOT NULL,
+        `likes` bigint(20) DEFAULT 0,
+        `isArchive` enum('0','1') NOT NULL DEFAULT '0',
+        `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+        PRIMARY KEY (`id`),
+        KEY `user-reel-relation` (`userID`),
+        CONSTRAINT `user-reel-relation` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`)
+    );

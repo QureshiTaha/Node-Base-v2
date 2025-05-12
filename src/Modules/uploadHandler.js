@@ -1,8 +1,5 @@
 const multer = require('multer');
 const path = require('path');
-const { sqlQuery } = require('./sqlHandler');
-
-
 
 // Multer storage configuration
 const storage = multer.diskStorage({
@@ -32,7 +29,7 @@ const fileFilter = (req, file, cb) => {
 // Multer upload instance
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter
 });
 

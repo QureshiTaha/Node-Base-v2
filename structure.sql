@@ -101,7 +101,12 @@ CREATE TABLE
         `title` VARCHAR(255) NOT NULL,
         `description` text DEFAULT NULL,
         `created_by` VARCHAR(100) NOT NULL,
-        `status` enum ('not_assigned', 'pending', 'in_progress', 'completed') DEFAULT 'not_assigned',
+        `status` enum (
+            'not_assigned',
+            'pending',
+            'in_progress',
+            'completed'
+        ) DEFAULT 'not_assigned',
         `priority` enum ('low', 'medium', 'high') DEFAULT 'medium',
         `due_date` datetime DEFAULT NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
@@ -127,7 +132,14 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    `db_projects` (`id` INT (11) NOT NULL AUTO_INCREMENT, `projectID` VARCHAR(100) NOT NULL, `name` VARCHAR(50) NOT NULL, `description` text NOT NULL, `project_meta` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`));
+    `db_projects` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `projectID` VARCHAR(100) NOT NULL,
+        `name` VARCHAR(50) NOT NULL,
+        `description` text NOT NULL,
+        `project_meta` VARCHAR(200) NOT NULL,
+        PRIMARY KEY (`id`)
+    );
 
 CREATE TABLE
     `db_logs` (
@@ -141,17 +153,38 @@ CREATE TABLE
         PRIMARY KEY (`id`)
     );
 
-	CREATE TABLE `db_reels` (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE
+    `db_reels` (
+        `id` int (11) NOT NULL AUTO_INCREMENT,
         `reelId` varchar(100) NOT NULL,
         `filepath` varchar(255) NOT NULL,
         `userID` varchar(100) NOT NULL,
         `title` varchar(100) DEFAULT 'untitled',
         `description` varchar(100) NOT NULL,
-        `likes` bigint(20) DEFAULT 0,
-        `isArchive` enum('0','1') NOT NULL DEFAULT '0',
+        `likes` bigint (20) DEFAULT 0,
+        `comments` int (11) NOT NULL DEFAULT 0,
+        `isArchive` enum ('0', '1') NOT NULL DEFAULT '0',
         `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
         PRIMARY KEY (`id`),
         KEY `user-reel-relation` (`userID`),
         CONSTRAINT `user-reel-relation` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`)
+    );
+
+CREATE TABLE
+    `db_reel_comments` (
+        `commentId` varchar(255) NOT NULL,
+        `reelId` varchar(255) NOT NULL,
+        `userID` varchar(255) NOT NULL,
+        `commentText` text NOT NULL,
+        `commentedAt` datetime DEFAULT current_timestamp(),
+        PRIMARY KEY (`commentId`)
+    );
+
+CREATE TABLE
+    `db_reel_likes` (
+        `id` int (11) NOT NULL AUTO_INCREMENT,
+        `userID` varchar(255) DEFAULT NULL,
+        `reelId` varchar(255) DEFAULT NULL,
+        `timeStamp` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        PRIMARY KEY (`id`)
     );

@@ -24,16 +24,12 @@ module.exports = (dependencies) => {
         });
       }
       // dislike to Reel
-      const dislikeReel = await sqlQuery(
-        `DELETE FROM db_reel_likes WHERE reelId = '${reelId}' AND userID = '${userID}'`
-      );
+      await sqlQuery(`DELETE FROM db_reel_likes WHERE reelId = '${reelId}' AND userID = '${userID}'`);
       const GetTotalLikes = await sqlQuery(
         `SELECT COUNT(*) AS totalLikes FROM db_reel_likes WHERE reelId = '${reelId}'`
       );
       if (GetTotalLikes.length > 0) {
-        const UpdateLikeInReel = await sqlQuery(
-          `UPDATE db_reels SET likes = '${GetTotalLikes[0].totalLikes}' WHERE reelId = '${reelId}'`
-        );
+        await sqlQuery(`UPDATE db_reels SET likes = '${GetTotalLikes[0].totalLikes}' WHERE reelId = '${reelId}'`);
       }
 
       res.status(200).json({

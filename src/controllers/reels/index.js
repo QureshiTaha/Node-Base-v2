@@ -5,7 +5,8 @@ const getAllReelsController = require('./getAllReels.controller');
 const deleteReelController = require('./deleteReel.controller');
 const likeReelController = require('./likeReel.controller');
 const dislikeReelController = require('./dislikeReel.controller');
-const addCommentController = require('./addComment.controller');
+const addCommentsController = require('./addComments.controller');
+const deleteCommentsController = require('./deleteComments.controller');
 
 module.exports = (dependencies) => {
   return {
@@ -16,6 +17,7 @@ module.exports = (dependencies) => {
     deleteReelController: deleteReelController(dependencies),
     likeReelController: likeReelController(dependencies),
     dislikeReelController: dislikeReelController(dependencies),
-    addCommentController: addCommentController(dependencies)
+    addCommentsController: addCommentsController(dependencies),
+    deleteCommentsController: deleteCommentsController(dependencies),
   };
 };

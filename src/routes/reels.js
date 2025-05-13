@@ -8,7 +8,9 @@ const {
   getAllReelsController,
   deleteReelController,
   likeReelController,
-  dislikeReelController
+  dislikeReelController,
+  addCommentsController,
+  deleteCommentsController,
 } = reelsController();
 
 const router = express.Router();
@@ -20,4 +22,7 @@ router.route('/get-latest').get(getAllReelsController);
 router.route('/delete/:reelID').delete(deleteReelController);
 router.route('/like').post(likeReelController);
 router.route('/dislike').post(dislikeReelController);
+router.route('/add-comment').post(addCommentsController);
+router.route('/delete-comment').post(deleteCommentsController);
+
 module.exports = router;

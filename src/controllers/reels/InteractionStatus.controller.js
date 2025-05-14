@@ -20,7 +20,7 @@ module.exports = () => {
       `);
 
       const commentResult = await sqlQuery(`
-        SELECT 1 FROM db_reel_comments
+        SELECT * FROM db_reel_comments
         WHERE reelId = '${reelId}' AND userID = '${userID}'
         LIMIT 1
       `);
@@ -35,7 +35,8 @@ module.exports = () => {
           reelId,
           userID,
           isLiked,
-          isCommented
+          isCommented,
+          comment: commentResult
         }
       });
     } catch (error) {

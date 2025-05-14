@@ -11,6 +11,7 @@ const {
   dislikeReelController,
   addCommentsController,
   deleteCommentsController,
+  interactionStatusController,
 } = reelsController();
 
 const router = express.Router();
@@ -24,5 +25,5 @@ router.route('/like').post(likeReelController);
 router.route('/dislike').post(dislikeReelController);
 router.route('/add-comment').post(addCommentsController);
 router.route('/delete-comment').post(deleteCommentsController);
-
+router.route('/interaction-status/:reelId/:userID').get(interactionStatusController);
 module.exports = router;

@@ -188,3 +188,23 @@ CREATE TABLE
         `timeStamp` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
         PRIMARY KEY (`id`)
     );
+
+CREATE TABLE
+    `coin_store` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `coinStoreId` CHAR(36) NOT NULL,
+        `ownerId` VARCHAR(255) NOT NULL,
+        `purchaseId` VARCHAR(255) NOT NULL,
+        `purchasedAt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE TABLE `coin_transaction` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `coinTransactionId` CHAR(36) NOT NULL,
+    `coinId` CHAR(36) NOT NULL,
+    `senderId` VARCHAR(255) NOT NULL,
+    `receiverId` VARCHAR(255) NOT NULL,
+    `transactionDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);

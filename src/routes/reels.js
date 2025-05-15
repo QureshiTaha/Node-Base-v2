@@ -12,8 +12,6 @@ const {
   addCommentsController,
   deleteCommentsController,
   interactionStatusController,
-  addCoinController,
-  sendCoinController,
   getAllCommentsController,
 } = reelsController();
 
@@ -29,8 +27,6 @@ router.route('/dislike').post(dislikeReelController);
 router.route('/add-comment').post(addCommentsController);
 router.route('/delete-comment').post(deleteCommentsController);
 router.route('/interaction-status/:reelId/:userID').get(interactionStatusController);
-router.route('/add-coin').post(addCoinController);
-router.route('/send-coin').post(sendCoinController);
-router.route('/get-all-comments').get(getAllCommentsController);
+router.route('/get-all-comments/:reelId').get(getAllCommentsController);
 
 module.exports = router;

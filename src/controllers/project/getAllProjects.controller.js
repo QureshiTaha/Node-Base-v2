@@ -10,9 +10,18 @@ module.exports = (dependencies) => {
       const _limit = limit ? limit : 10;
       const _search = search ? search : '';
 
-      const projects = await sqlQuery(
+      var projects = await sqlQuery(
         `SELECT * FROM db_projects WHERE name LIKE '%${_search}%' LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`
       );
+      // check total count and haveMore bool
+      const totalCount = await sqlQuery(`SELECT count(1) as count FROM db_projects WHERE name LIKE '%${_search}%'`);
+
+
+      if (projects.length > 0) {
+        projects[projects.length - 1].haveMore = totalCount[0].count > _page * _limit;
+        projects[projects.length - 1].totalCount = totalCount[0].count;
+      }
+
 
       if (projects.length === 0) {
         res.status(400).json({ success: false, message: 'Projects not found' });

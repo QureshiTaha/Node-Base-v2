@@ -105,6 +105,8 @@ CREATE TABLE
         `priority` enum ('low', 'medium', 'high') DEFAULT 'medium',
         `due_date` datetime DEFAULT NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        `isDeleted` enum ('0', '1') NOT NULL DEFAULT '0',
+        `deleted_at` datetime DEFAULT NULL,
         `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
         PRIMARY KEY (`id`),
         UNIQUE KEY `taskId` (`taskID`),

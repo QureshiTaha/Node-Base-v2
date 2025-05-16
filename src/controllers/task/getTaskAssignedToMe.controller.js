@@ -23,7 +23,7 @@ module.exports = (dependencies) => {
         LEFT JOIN db_users ON db_tasks.created_by = db_users.userID
         LEFT JOIN db_projects ON db_tasks.taskProjectID = db_projects.projectID
         LEFT JOIN db_task_assignments ON db_tasks.taskID = db_task_assignments.task_id
-        WHERE db_tasks.isDeleted = 0 AND db_task_assignments.assigned_to = ? || db_task_assignments.assigned_by = ? || db_tasks.created_by = ?
+        WHERE ( db_task_assignments.assigned_to = ? || db_task_assignments.assigned_by = ? || db_tasks.created_by = ?) AND db_tasks.isDeleted = ? 
       `;
 
       // Add search condition if provided
@@ -37,9 +37,9 @@ module.exports = (dependencies) => {
       `;
 
       if (_search) {
-        params = [userID, userID, userID, _search, _search, _limit, (_page - 1) * _limit];
+        params = [userID, userID, userID, '0', _search, _search, _limit, (_page - 1) * _limit];
       } else {
-        params = [userID, userID, userID, _limit, (_page - 1) * _limit];
+        params = [userID, userID, userID, '0', _limit, (_page - 1) * _limit];
       }
 
       const tasks = await sqlQuery(query, params);
@@ -48,14 +48,16 @@ module.exports = (dependencies) => {
       filterTasks = tasks.filter((task, index) => {
         return tasks.findIndex((t) => t.taskID === task.taskID) === index;
       });
-      
+
 
       if (tasks.length === 0) {
-        res.status(400).json({ success: false, message: 'Tasks not found' });
+        res.status(200).json({ success: false, message: 'Not found any related Tasks', data: filterTasks });
       } else {
         res.status(200).json({ success: true, message: 'Tasks found successfully!', data: filterTasks });
       }
     } catch (error) {
+      console.log(error);
+
       res.status(400).json({ success: false, message: `Error fetching tasks. StackTrace: ${error}` });
     }
   };

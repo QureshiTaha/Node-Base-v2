@@ -3,7 +3,8 @@ connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
-  database: process.env.DATABASE
+  database: process.env.DATABASE,
+  charset : 'utf8mb4'
 });
 try {
   connection.connect(function (err) {

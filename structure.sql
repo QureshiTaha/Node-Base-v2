@@ -88,6 +88,7 @@ CREATE TABLE
         `id` INT (11) NOT NULL AUTO_INCREMENT,
         `userID` VARCHAR(100) NOT NULL,
         `filePath` VARCHAR(100) NOT NULL,
+        `thumbnailPath` VARCHAR(100) DEFAULT NULL,
         PRIMARY KEY (`id`),
         KEY `user-upload-relation` (`userID`),
         CONSTRAINT `user-upload-relation` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE

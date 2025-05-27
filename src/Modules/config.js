@@ -4,7 +4,7 @@ connection = mysql.createConnection({
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
   database: process.env.DATABASE,
-  charset: 'utf8mb4',
+  charset : 'utf8mb4'
 });
 try {
   connection.connect(function (err) {

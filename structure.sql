@@ -189,3 +189,44 @@ CREATE TABLE
         `timeStamp` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
         PRIMARY KEY (`id`)
     );
+
+
+CREATE TABLE
+    `coin_store` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `coinStoreId` VARCHAR(100) NOT NULL,
+        `ownerId` VARCHAR(100) NULL,
+        `purchaseId` VARCHAR(100) NULL,
+        `purchasedAt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE `coin_transaction` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `coinTransactionId` CHAR(36) NOT NULL,
+    `coinId` CHAR(36) NOT NULL,
+    `senderId` VARCHAR(255) NOT NULL,
+    `receiverId` VARCHAR(255) NOT NULL,
+    `transactionDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE followers (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `followBy` VARCHAR(50) NOT NULL,
+  `followTo` VARCHAR(50) NOT NULL,
+  `followAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX (followBy),
+  INDEX (followTo)
+);
+
+
+ALTER TABLE db_users (
+`ADD` COLUMN totalFollowers INT DEFAULT 0,
+`ADD` COLUMN followings INT DEFAULT 0,
+`ADD` COLUMN posts INT DEFAULT 0,
+`ADD` COLUMN userBio TEXT DEFAULT NULL,
+`ADD` COLUMN profilePic VARCHAR(255) DEFAULT NULL;
+);

@@ -17,7 +17,10 @@ module.exports = (dependencies) => {
         userAccountApproved,
         userMeta,
         userRole,
-        fcmToken
+        fcmToken,
+        totalFollowers,
+        profilePic,
+        userBio,
       } = req.body;
 
       if (!userID) {
@@ -80,6 +83,19 @@ module.exports = (dependencies) => {
         updateFields.push('fcmToken = ?');
         values.push(fcmToken);
       }
+      if (totalFollowers) {
+        updateFields.push('totalFollowers = ?');
+        values.push(totalFollowers);
+      }
+      if (profilePic) {
+        updateFields.push('profilePic = ?');
+        values.push(profilePic);
+      }
+      
+      if (userBio) {
+        updateFields.push('userBio = ?');
+        values.push(userBio);
+      }
 
       if (updateFields.length === 0) {
         return res.send({ status: true, msg: 'No fields to update', data: {} });
@@ -112,7 +128,14 @@ module.exports = (dependencies) => {
         userAddressPostcode,
         userGender,
         userDateOfBirth,
-        userRole
+        userRole,
+        userAccountApproved,
+        userMeta,
+        fcmToken,
+        totalFollowers,
+        userPhone,
+        profilePic,
+        userBio,
       };
 
       res.send({ status: true, msg: 'success', data: dataStore });

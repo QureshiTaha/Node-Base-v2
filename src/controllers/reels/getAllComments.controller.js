@@ -18,8 +18,9 @@ module.exports = () => {
 
     try {
       var comments = await sqlQuery(`
-        SELECT *
+        SELECT db_reel_comments.*,db_users.userFirstName, db_users.userSurname
         FROM db_reel_comments
+        LEFT JOIN db_users ON db_reel_comments.userId = db_users.userID
         WHERE reelId = '${reelId}'
         ORDER BY commentedAt DESC
         LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}

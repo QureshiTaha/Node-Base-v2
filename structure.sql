@@ -6,7 +6,7 @@ CREATE TABLE
         `userSurname` VARCHAR(100) NOT NULL,
         `userEmail` VARCHAR(50) NOT NULL,
         `userPassword` VARCHAR(255) NOT NULL,
-        `userPhone` VARCHAR(11) DEFAULT NULL,
+       `userPhone` VARCHAR(11) DEFAULT NULL,
         `userAddressLine1` VARCHAR(255) NOT NULL,
         `userAddressLine2` VARCHAR(255) NOT NULL,
         `userAddressPostcode` VARCHAR(255) NOT NULL,
@@ -19,6 +19,11 @@ CREATE TABLE
         `userAccountApproved` tinyint (4) DEFAULT 1,
         `userDeleted` tinyint (4) DEFAULT NULL,
         `userDeletedDate` datetime DEFAULT NULL,
+        `totalFollowers` INT DEFAULT 0,
+        `followings` INT DEFAULT 0,
+        `posts` INT DEFAULT 0,
+        `userBio` TEXT DEFAULT NULL,
+        `profilePic` VARCHAR(255) DEFAULT NULL,
         `fcmToken` VARCHAR(255) DEFAULT NULL,
         `userMeta` longtext DEFAULT NULL,
         PRIMARY KEY (`id`),
@@ -223,10 +228,20 @@ CREATE TABLE followers (
 );
 
 
-ALTER TABLE db_users (
-`ADD` COLUMN totalFollowers INT DEFAULT 0,
-`ADD` COLUMN followings INT DEFAULT 0,
-`ADD` COLUMN posts INT DEFAULT 0,
-`ADD` COLUMN userBio TEXT DEFAULT NULL,
-`ADD` COLUMN profilePic VARCHAR(255) DEFAULT NULL;
+-- ALTER TABLE db_users (
+-- `ADD` COLUMN totalFollowers INT DEFAULT 0,
+-- `ADD` COLUMN followings INT DEFAULT 0,
+-- `ADD` COLUMN posts INT DEFAULT 0,
+-- `ADD` COLUMN userBio TEXT DEFAULT NULL,
+-- `ADD` COLUMN profilePic VARCHAR(255) DEFAULT NULL;
+-- );
+
+CREATE TABLE coin_offers (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `offerId` VARCHAR(36) NOT NULL UNIQUE,
+  `coinAmount` INT NOT NULL,
+  `actualPrice` DECIMAL(10, 2) NOT NULL,
+  `offerPrice` DECIMAL(10, 2) NOT NULL,
+  `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `isActive` TINYINT(1) DEFAULT 1
 );

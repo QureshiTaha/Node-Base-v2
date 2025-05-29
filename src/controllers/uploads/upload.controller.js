@@ -7,33 +7,45 @@ const { sqlQuery } = require('../../Modules/sqlHandler');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 // Function to generate thumbnail
-const generateThumbnail = async (videoPath, thumbnailName) => {
+const waitForFile = (filePath, retries = 5, delay = 300) => {
+  return new Promise((resolve, reject) => {
+    const check = (attempt) => {
+      if (fs.existsSync(filePath)) {
+        return resolve(true);
+      }
+      if (attempt <= 0) {
+        return reject(new Error(`File not found: ${filePath} `));
+      }
+      setTimeout(() => check(attempt - 1), delay);
+    };
+    check(retries);
+  });
+};
 
+const generateThumbnail = async (videoPath, thumbnailName) => {
   const thumbnailDir = path.join(__dirname, '../../../uploads');
   console.log('Generating thumbnail...');
   console.log(videoPath, thumbnailName);
+  
+  await waitForFile(videoPath);
 
-
-  await
+  return new Promise((resolve, reject) => {
     ffmpeg(videoPath)
       .on('end', () => {
         console.log('✅ Thumbnail generated!');
+        resolve();
       })
       .on('error', (err) => {
         console.error('❌ FFmpeg error:', err.message);
+        reject(err);
       })
       .screenshots({
-        timestamps: ['10%'], // at 5 seconds
+        timestamps: ['10%'],
         filename: thumbnailName,
         folder: thumbnailDir,
         size: '320x240'
       });
-
-  //   });
-  // } catch (error) {
-  //   console.log(">>>",error);
-  //   ;
-  // }
+  });
 };
 
 // Single file upload controller

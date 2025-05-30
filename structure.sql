@@ -142,3 +142,50 @@ CREATE TABLE
         `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
         PRIMARY KEY (`id`)
     );
+
+CREATE TABLE
+    `db_chat_messages` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `messageID` VARCHAR(100) NOT NULL,
+        `senderID` VARCHAR(100) NOT NULL,
+        `receiverID` VARCHAR(100) DEFAULT NULL,
+        `chatID` VARCHAR(100) NOT NULL,
+        `message` text NOT NULL,
+        `messageType` enum ('text', 'image', 'video', 'file') DEFAULT 'text',
+        `timestamp` datetime DEFAULT CURRENT_TIMESTAMP(),
+        `isRead` tinyint (1) DEFAULT 0,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `messageID` (`messageID`),
+        KEY `senderID` (`senderID`),
+        KEY `idx_chat_messages_chatid_timestamp` (`chatID`, `timestamp`),
+        KEY `idx_chatID_timestamp` (`chatID`, `timestamp`),
+        CONSTRAINT `db_chat_messages_ibfk_1` FOREIGN KEY (`senderID`) REFERENCES `db_users` (`userID`)
+    );
+
+CREATE TABLE
+    `db_chats` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `chatID` VARCHAR(100) NOT NULL,
+        `chatType` enum ('private', 'broadcast', 'group') NOT NULL,
+        `chatName` VARCHAR(255) DEFAULT NULL,
+        `chatWith` VARCHAR(100) DEFAULT NULL,
+        `createdBy` VARCHAR(100) DEFAULT NULL,
+        `createdAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `chatID` (`chatID`),
+        KEY `idx_chat_createdAt` (`chatID`, `createdAt`),
+        KEY `idx_chatID_createdAt` (`chatID`, `createdAt`),
+        KEY `idx_createdBy_chatWith` (`createdBy`, `chatWith`)
+    )
+CREATE TABLE
+    `db_chat_members` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `chatID` VARCHAR(100) DEFAULT NULL,
+        `userID` VARCHAR(100) DEFAULT NULL,
+        `joinedAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        KEY `userID` (`userID`),
+        KEY `chatID` (`chatID`),
+        CONSTRAINT `db_chat_members_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`),
+        CONSTRAINT `db_chat_members_ibfk_2` FOREIGN KEY (`chatID`) REFERENCES `db_chats` (`chatID`)
+    )

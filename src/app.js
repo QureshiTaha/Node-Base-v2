@@ -16,6 +16,7 @@ const http = require('http');
 var admin = require('firebase-admin');
 var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 const Mail = require('./Modules/email');
+const { initializeSocket } = require('./Modules/socketManager');
 
 module.exports = {
   start: async () => {
@@ -36,7 +37,7 @@ module.exports = {
     });
 
     const corsOptions = {
-      origin: '*',
+      origin: '*',  // You can restrict this based on your frontend origin for production
       credentials: true, // access-control-allow-credentials:true
       optionSuccessStatus: 200
     };
@@ -62,10 +63,14 @@ module.exports = {
     app.use('/uploads', express.static('uploads'));
 
     app.use(API_PREFIX, routes);
-    var server = http.createServer(app);
+    const server = http.createServer(app);
+    initializeSocket(server);
 
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log('\x1b[32m%s\x1b[0m', `Node environment started listening on port:${port}`);
     });
+    // app.listen(port, () => {
+    //   console.log('\x1b[32m%s\x1b[0m', `Node environment started listening on port:${port}`);
+    // });
   }
 };

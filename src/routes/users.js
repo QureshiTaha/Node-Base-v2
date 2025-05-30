@@ -11,7 +11,8 @@ const {
   getUserByUserEmailController,
   getUserByUserPhoneController,
   changePasswordController,
-  deleteUsersController
+  deleteUsersController,
+  getUserByUserIdController,
 } = userController();
 
 const { testingController } = testController();
@@ -29,5 +30,6 @@ router.route('/getUserByEmail/:userEmail').get(getUserByUserEmailController);
 router.route('/getUserByPhone/:userPhone').get(getUserByUserPhoneController);
 router.route('/update-user').post(editUserController);
 router.route('/test').get(testingController);
+router.route('/by-userID/:userID').get(getUserByUserIdController);
 
 module.exports = router;

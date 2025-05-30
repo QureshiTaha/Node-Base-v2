@@ -7,6 +7,7 @@ const getUserByUserEmailController = require("./getUserByUserEmail.controller.js
 const getUserByUserPhoneController = require("./getUserByUserPhone.controller");
 const changePasswordController = require("./changePassword.controller.js");
 const deleteUsersController = require("./deleteUsers.controller");
+const getUserByUserIdController = require("./getUserByUserId.controller");
 
 module.exports = (dependencies) => {
     return {
@@ -18,6 +19,7 @@ module.exports = (dependencies) => {
         getUserByUserEmailController: getUserByUserEmailController(dependencies),
         getUserByUserPhoneController: getUserByUserPhoneController(dependencies),
         changePasswordController: changePasswordController(dependencies),
-        deleteUsersController: deleteUsersController(dependencies)
+        deleteUsersController: deleteUsersController(dependencies),
+        getUserByUserIdController: getUserByUserIdController(dependencies),
     }
 }

@@ -49,7 +49,6 @@ module.exports = () => {
         status: true,
         msg: 'Followers list fetched successfully',
         data: followersList,
-        totalFollowers: totalCount
       });
 
     } catch (error) {

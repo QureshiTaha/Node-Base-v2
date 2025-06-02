@@ -28,6 +28,10 @@ module.exports = (dependencies) => {
                             msg: 'Successfully deleted the reel',
                             data: deleteReel
                         });
+                        await sqlQuery(
+                        `UPDATE db_users SET posts = GREATEST(posts - 1, 0) WHERE userID = ?`,
+                        [Reel[0].userID]
+                        );
                     }
                 })
 

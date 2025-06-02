@@ -29,6 +29,10 @@ module.exports = (dependencies) => {
       INSERT INTO db_reels (userID, filePath, timeStamp,reelId,title,description) 
       VALUES ('${uploadData.userID}', '${uploadData.filePath}', '${uploadData.timeStamp}','${uploadData.reelId}','${uploadData.title}','${uploadData.description}')`);
 
+      await sqlQuery(
+        `UPDATE db_users SET posts = posts + 1 WHERE userID = '${uploadData.userID}'`   ,
+      );
+
       res.status(200).json({
         status: true,
         msg: 'Successfully added Reels',

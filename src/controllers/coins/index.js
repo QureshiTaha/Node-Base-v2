@@ -6,6 +6,11 @@ const getTotalCoinStoreController = require('./getTotalCoinStore.controller');
 const getAvailableCoinsController = require('./getAvailableCoins.controller');
 const listPurchasedCoinController = require('./listPurchasedCoin.controller');
 const coinHistoryController = require('./coinHistory.controller');
+const createOfferController = require('./createOffer.controller');
+const updateOfferController = require('./updateOffer.controller');
+const deleteOfferController = require('./deleteOffer.controller');
+const getAllOffersController = require('./getAllOffers.controller');
+const getOfferByIdController = require('./getOfferById.controller');
 
 module.exports = (dependencies) => {
   return {
@@ -17,6 +22,12 @@ module.exports = (dependencies) => {
     getAvailableCoinsController: getAvailableCoinsController(dependencies),
     listPurchasedCoinController: listPurchasedCoinController(dependencies),
     coinHistoryController: coinHistoryController(dependencies),
+    createOfferController: createOfferController(dependencies),
+    updateOfferController: updateOfferController(dependencies),
+    deleteOfferController: deleteOfferController(dependencies),
+    getAllOffersController: getAllOffersController(dependencies),
+    getOfferByIdController: getOfferByIdController(dependencies),
   };
 };
+
 

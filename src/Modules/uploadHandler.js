@@ -18,15 +18,16 @@ const storage = multer.diskStorage({
 });
 
 // Allowed file types
-const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/mkv'];
+const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/mkv', 'video/webm', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only images and videos are allowed.'), false);
-  }
+  // if (allowedTypes.includes(file.mimetype)) {
+  //   cb(null, true);
+  // } else {
+  //   cb(new Error('Invalid file type. Only images and videos are allowed.'), false);
+  // }
+  cb(null, true); // Accept everything
 };
 
 // Multer upload instance

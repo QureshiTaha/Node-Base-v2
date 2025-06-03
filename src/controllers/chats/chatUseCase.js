@@ -145,7 +145,7 @@ module.exports = {
             }
 
             if (result)
-                return { success: true, message: 'Messages found successfully!', data: result };
+                return { success: true, message: 'Chat List found successfully!', data: result };
             return { success: false, message: "something Went wrong While SQL Query", data: [] };
         } catch (error) {
             console.error('Error getting messages:', error);
@@ -190,6 +190,19 @@ module.exports = {
     },
     createNewChat: async (data) => {
         const { chatName, chatType, createdBy, chatWith } = data;
+
+        // Check If its private and already Exist..
+        if (chatType == 'private') {
+            const isPrivateChatExist = await sqlQuery(
+                `SELECT * FROM db_chats WHERE chatType = 'private' AND (createdBy = ? AND chatWith = ?) OR (createdBy = ? AND chatWith = ?) LIMIT 1`,
+                [createdBy, chatWith, chatWith, createdBy]
+            ); console.log("isPrivateChatExist", isPrivateChatExist);
+
+            if (isPrivateChatExist.length > 0) {
+                return { success: true, message: 'Private chat already exist', data: isPrivateChatExist };
+            }
+        }
+
         try {
             const chatID = uuidv4();
             const result = await sqlQuery(
@@ -201,6 +214,7 @@ module.exports = {
             if (chatWith) {
                 await sqlQuery(`INSERT INTO db_chat_members (chatID, userID) VALUES (?, ?)`, [chatID, chatWith]);
             }
+
 
             if (result)
                 return { success: true, message: 'Chat Created Successfully', data: [{ chatID, chatName, chatType, createdBy, chatWith }] };

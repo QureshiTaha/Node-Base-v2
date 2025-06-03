@@ -10,7 +10,7 @@ const {
 
 // Route for single file upload
 router.post('/upload', upload.single('file'), uploadFile);
-router.post('/uploads', upload.array('files', 5), uploadMultipleFiles); // Allow max 5 files
+router.post('/uploads', upload.array('files', 15), uploadMultipleFiles); // Allow max 15 files
 
 router.delete('/delete/:fileName', deleteFile);
 router.post('/delete-multiple', deleteMultipleFiles);

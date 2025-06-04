@@ -2,7 +2,7 @@ const { sqlQuery } = require('../../Modules/sqlHandler');
 
 module.exports = () => {
   return async (req, res) => {
-    const { userID } = req.body;
+    const { userID } = req.params;
     const { page, limit } = req.query;
 
     if (!userID) {

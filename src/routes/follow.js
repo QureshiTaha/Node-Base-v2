@@ -12,8 +12,8 @@ const {
 const router = express.Router();
 
 router.post('/follow', followUserController);
-router.post('/getFollowingList', getFollowingListController);
-router.post('/getFollowersList', getFollowersListController);
+router.get('/getFollowingList/:userID', getFollowingListController);
+router.get('/getFollowersList/:userID', getFollowersListController);
 router.post('/unfollow', unfollowController);
 router.post('/checkFollow', checkFollowController);
 

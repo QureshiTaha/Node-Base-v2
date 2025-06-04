@@ -2,7 +2,7 @@ const { sqlQuery } = require('../../Modules/sqlHandler');
 
 module.exports = () => {
   return async (req, res) => {
-    const { userID, page, limit } = req.body;
+    const { userID, page, limit } = req.params;
 
     if (!userID) {
       return res.status(400).json({
@@ -32,7 +32,7 @@ module.exports = () => {
 
       const followingList = await sqlQuery(`
         SELECT 
-          u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail
+          u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic
         FROM followers f
         JOIN db_users u ON f.followTo = u.userID
         WHERE f.followBy = ?

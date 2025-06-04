@@ -22,7 +22,7 @@ const router = express.Router();
 router.route('/add-coin').post(addCoinsController);
 router.route('/send-coin').post(sendCoinController);
 router.route('/purchase-coin').post(purchaseCoinController);
-router.route('/user-total-coin').post(userTotalCoinController);  
+router.route('/user-total-coin/:userID').get(userTotalCoinController);  
 router.route('/total-coin-store').get(getTotalCoinStoreController);
 router.route('/available-coins').get(getAvailableCoinsController);
 router.route('/purchased-coins').get(listPurchasedCoinController);

@@ -4,13 +4,14 @@ const taskUseCase = require('./taskUseCase');
 const logsUseCase = require('../Logs/logs.UseCase');
 const userUseCase = require('../users/userUseCase');
 const notification = require('../../Modules/notification');
+const { scheduleOrUpdateReminder } = require('../../Modules/cronJobs/taskReminderScheduler');
 
 module.exports = (dependencies) => {
   return async (req, res, next) => {
     try {
       const taskID = req.params.taskID;
 
-      const { title, description, status, priority, due_date, userID } = req.body;
+      const { title, description, status, priority, due_date, reminder_date, userID } = req.body;
 
       if (!userID) {
         res.status(400).json({ success: false, message: 'userID is required' });
@@ -70,6 +71,41 @@ module.exports = (dependencies) => {
 
       if (due_date) {
         query += `due_date = '${moment(due_date).format('YYYY-MM-DD HH:mm:ss')}', `;
+      }
+      if (reminder_date) {
+        query += `reminder_date = '${moment(reminder_date).format('YYYY-MM-DD HH:mm:ss')}', `;
+
+        const user = await userUseCase.getUserByUserID(userID);
+
+        scheduleOrUpdateReminder({ taskID, reminder_date, userID });
+
+        const allUserIDs = await taskUseCase.getAllUsersByTaskID(taskID);
+
+        if (allUserIDs.success && allUserIDs.data.length) {
+          for (let i = 0; i < allUserIDs.data.length; i++) {
+            if (allUserIDs.data[i] !== userID) {
+              const notifyPayload = {
+                title: 'Task Reminder Updated',
+                body: `${user[0].userFirstName} ${user[0].userSurname} Set Reminder on Task`,
+                userID: allUserIDs.data[i],
+                data: {
+                  type: 'task_status_updated',
+                  taskID,
+                }
+              }
+              console.log(notifyPayload);
+
+              await notification.push(notifyPayload);
+
+              await logsUseCase.addLogs({
+                taskID,
+                userID: allUserIDs.data[i],
+                message: `${user[0].userFirstName} ${user[0].userSurname} Set Reminder on Task`,
+                log_type: 'system'
+              });
+            }
+          }
+        }
       }
 
       query += `updated_at = '${moment().format('YYYY-MM-DD HH:mm:ss')}' `;

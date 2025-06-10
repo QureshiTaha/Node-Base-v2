@@ -104,6 +104,7 @@ CREATE TABLE
         `status` enum ('not_assigned', 'pending', 'in_progress', 'completed') DEFAULT 'not_assigned',
         `priority` enum ('low', 'medium', 'high') DEFAULT 'medium',
         `due_date` datetime DEFAULT NULL,
+        `reminder_date` datetime DEFAULT NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
         `isDeleted` enum ('0', '1') NOT NULL DEFAULT '0',
         `deleted_at` datetime DEFAULT NULL,

@@ -51,6 +51,7 @@ module.exports = (dependencies) => {
             status: task.data.status,
             priority: task.data.priority,
             due_date: task.data.due_date,
+            reminder_date: task.data.reminder_date,
             assigned_by: assignedByUser[0].userID,
             assigned_to: user[0].userID,
             assigned_at: moment().format('YYYY-MM-DD HH:mm:ss')

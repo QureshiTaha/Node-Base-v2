@@ -129,11 +129,19 @@ module.exports = {
       return error;
     }
   },
-  getAllUsers: async function (search = '') {
+  getAllUsers: async function (search = null) {
     try {
+      var query = 'SELECT * from db_users WHERE ';
+      if (search) {
+        query += ` userFirstName like '%${search}%' or userSurname like '%${search}%' or userEmail like '%${search}%'
+          or userPhone like '%${search}%' AND (userDeleted IS NULL OR userDeleted != 1)`
+      } else {
+        query += `  (userDeleted IS NULL OR userDeleted != 1)`
+      }
+      console.log(query);
+
       const userList = await sqlQuery(
-        `SELECT * from db_users where userFirstName like '%${search}%' or userSurname like '%${search}%' or userEmail like '%${search}%'
-        or userPhone like '%${search}%' AND (userDeleted IS NULL OR userDeleted != 1)`
+        query
       );
       if (userList) return userList;
       return null;

@@ -17,6 +17,7 @@ var admin = require('firebase-admin');
 var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 const Mail = require('./Modules/email');
 const { initializeSocket } = require('./Modules/socketManager');
+const { initializeCron } = require('./Modules/crons');
 
 module.exports = {
   start: async () => {
@@ -35,6 +36,7 @@ module.exports = {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
+    initializeCron();
 
     const corsOptions = {
       origin: '*',  // You can restrict this based on your frontend origin for production

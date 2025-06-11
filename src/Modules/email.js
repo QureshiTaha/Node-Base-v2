@@ -27,7 +27,6 @@ module.exports = {
             }
           });
 
-      // send mail
       receiverEmail = process.env.NODEMAILER_EMAIL || 'taskmanagement@iceweb.in';
       if (!userEmail && !userID) return { success: false, message: 'Missing required fields: userID or userEmail' };
       if (userEmail) {
@@ -51,7 +50,7 @@ module.exports = {
             <table width="100%" style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
               <tr>
                 <td style="background: #0d6efd; padding: 20px; color: white; text-align: center;">
-                  <h1 style="margin: 0; font-size: 24px;">Task Manager Notification</h1>
+                  <h1 style="margin: 0; font-size: 24px;">Dating Application Notification</h1>
                 </td>
               </tr>
               <tr>

@@ -245,3 +245,13 @@ CREATE TABLE coin_offers (
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `isActive` TINYINT(1) DEFAULT 1
 );
+
+CREATE TABLE otp_verification (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `userID` VARCHAR(255) UNIQUE,
+  `otp` VARCHAR(6),
+  `attempt` INT,
+  `dateUpdated` DATETIME,
+  `coolDownTime` DATETIME,
+  FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE
+);

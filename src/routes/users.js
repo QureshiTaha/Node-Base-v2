@@ -13,6 +13,9 @@ const {
   changePasswordController,
   deleteUsersController,
   getUserByUserIdController,
+  forgotPasswordController,
+  verifyOtpController,
+  resetPasswordController,
 } = userController();
 
 const { testingController } = testController();
@@ -31,5 +34,8 @@ router.route('/getUserByPhone/:userPhone').get(getUserByUserPhoneController);
 router.route('/update-user').post(editUserController);
 router.route('/test').get(testingController);
 router.route('/by-userID/:userID').get(getUserByUserIdController);
+router.route('/forgot-password').post(forgotPasswordController);
+router.route('/verify-otp').post(verifyOtpController);
+router.route('/reset-password').post(resetPasswordController);
 
 module.exports = router;

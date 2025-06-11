@@ -93,7 +93,6 @@ module.exports = (dependencies) => {
                   taskID,
                 }
               }
-              console.log(notifyPayload);
 
               await notification.push(notifyPayload);
 

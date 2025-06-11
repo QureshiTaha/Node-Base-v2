@@ -5,6 +5,7 @@ const deleteTaskController = require('./deleteTask.controller');
 const assignTaskController = require('./assignTask.controller');
 const TaskAssignedToMeController = require('./getTaskAssignedToMe.controller');
 const updateTaskController = require('./updateTask.controller');
+const tagsControllers = require('./tags.controllers');
 module.exports = (dependencies) => {
   return {
     getAllTasksController: getAllTasksController(dependencies),
@@ -13,6 +14,7 @@ module.exports = (dependencies) => {
     addTaskController: addTaskController(dependencies),
     deleteTaskController: deleteTaskController(dependencies),
     assignTaskController: assignTaskController(dependencies),
-    updateTaskController: updateTaskController(dependencies)
+    updateTaskController: updateTaskController(dependencies),
+    tagsControllers: tagsControllers(dependencies),
   };
 };

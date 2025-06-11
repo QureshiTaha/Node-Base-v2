@@ -36,8 +36,6 @@ async function scheduleAllRemindersForToday() {
 // 2. Schedule or update a single task reminder
 async function scheduleOrUpdateReminder(_task) {
 
-    console.log(_task, "MYInput");
-
     let task = _task;
 
     // If only taskID provided or partial object

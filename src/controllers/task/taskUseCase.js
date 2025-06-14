@@ -13,6 +13,7 @@ module.exports = {
       const taskPriority = taskData.taskPriority || 'medium';
       const taskUserID = taskData.taskUserID;
       const taskProjectID = taskData.taskProjectID;
+      const tag_name = taskData.tag_name || '';
       if (!taskUserID || !taskProjectID) {
         console.error('Missing required fields: taskUserID or taskProjectID');
         return { success: false, message: 'Missing required fields' };
@@ -24,12 +25,13 @@ module.exports = {
             taskProjectID,
             title,
             description,
+            tag_name,
             status,
             priority,
             created_by
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+          ) VALUES (?,?, ?, ?, ?, ?, ?, ?)`;
 
-      const values = [taskID, taskProjectID, taskTitle, taskDescription, taskStatus, taskPriority, taskUserID];
+      const values = [taskID, taskProjectID, taskTitle, taskDescription, tag_name, taskStatus, taskPriority, taskUserID];
 
       const result = await sqlQuery(query, values);
 
@@ -42,6 +44,7 @@ module.exports = {
             taskProjectID,
             taskTitle,
             taskDescription,
+            tag_name,
             taskStatus,
             taskPriority,
             taskUserID

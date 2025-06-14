@@ -15,6 +15,7 @@ module.exports = (dependencies) => {
       const taskPriority = req.body.taskPriority || 'medium';
       const taskUserID = req.body.taskUserID;
       const taskProjectID = req.body.taskProjectID;
+      const tag_name = req.body.tag_name || '';
       console.log(req.body);
 
       if (!taskUserID || !taskProjectID) {
@@ -42,6 +43,7 @@ module.exports = (dependencies) => {
         taskStatus,
         taskPriority,
         taskUserID,
+        tag_name,
         taskProjectID
       });
 
@@ -56,7 +58,8 @@ module.exports = (dependencies) => {
             taskStatus,
             taskPriority,
             taskUserID,
-            taskProjectID
+            taskProjectID,
+            tag_name
           }
         });
       } else {

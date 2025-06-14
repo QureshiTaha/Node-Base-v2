@@ -190,3 +190,5 @@ CREATE TABLE
         CONSTRAINT `db_chat_members_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`),
         CONSTRAINT `db_chat_members_ibfk_2` FOREIGN KEY (`chatID`) REFERENCES `db_chats` (`chatID`)
     )
+CREATE TABLE
+    `db_task_tags` (`id` INT (11) NOT NULL AUTO_INCREMENT, `tag_name` VARCHAR(50) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `tag_name` (`tag_name`), KEY `idx_task_tags_tag_name` (`tag_name`))

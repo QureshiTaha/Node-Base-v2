@@ -1,10 +1,17 @@
 const express = require('express');
 const { taskController } = require('../controllers');
 
-const { getAllTasksController, addTaskController, updateTaskController, getTaskByIDController, deleteTaskController, assignTaskController, TaskAssignedToMeController, tagsControllers } =
+const { getAllTasksController,
+  addTaskController,
+  updateTaskController,
+  getTaskByIDController,
+  deleteTaskController,
+  assignTaskController,
+  TaskAssignedToMeController,
+  tagsControllers } =
   taskController();
 
-const { addTag, removeTag, getTags, getTasksByTag } = tagsControllers;
+const { addTag, removeTag, getTags, getTasksByTag, getTagsByUserID } = tagsControllers;
 
 const router = express.Router();
 router.route('/').get(getAllTasksController);
@@ -15,6 +22,7 @@ router.route('/assign').post(assignTaskController);
 router.route('/add-tag').post(addTag);
 router.route('/remove-tag/:tag_name').delete(removeTag);
 router.route('/get-tags').get(getTags);
+router.route('/get-tags-by-userID/:userID').get(getTagsByUserID);
 router.route('/by-tag/:tag_name').get(getTasksByTag);
 router.route('/:taskID').put(updateTaskController);
 router.route('/:taskID/:userID').delete(deleteTaskController);

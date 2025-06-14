@@ -11,7 +11,7 @@ module.exports = (dependencies) => {
       const _search = search ? search : '';
 
       var projects = await sqlQuery(
-        `SELECT * FROM db_projects WHERE name LIKE '%${_search}%' LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`
+        `SELECT * FROM db_projects WHERE name LIKE '%${_search}%' Order By id DESC LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`
       );
       // check total count and haveMore bool
       const totalCount = await sqlQuery(`SELECT count(1) as count FROM db_projects WHERE name LIKE '%${_search}%'`);

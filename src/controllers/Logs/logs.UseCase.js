@@ -56,11 +56,13 @@ module.exports = {
 
       const query = `
         SELECT 
-          dl.*, 
+          dl.*, t.title as taskTitle,t.isDeleted as taskDeleted,
           IF(dl.log_type = 'system', 'system', CONCAT(u.userFirstName, ' ', u.userSurname)) AS userName
         FROM db_logs dl
         LEFT JOIN db_users u 
           ON dl.userID = u.userID AND dl.log_type = 'user'
+        LEFT JOIN db_tasks t 
+          ON dl.taskID = t.taskID
         WHERE 
           dl.userID = ? 
           OR dl.taskID IN (
@@ -77,6 +79,8 @@ module.exports = {
       const countQuery = `
         SELECT COUNT(*) AS count
         FROM db_logs dl
+        LEFT JOIN db_tasks t 
+          ON dl.taskID = t.taskID
         WHERE 
           dl.userID = ? 
           OR dl.taskID IN (

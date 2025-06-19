@@ -23,10 +23,10 @@ module.exports = () => {
       const totalCount = countResult?.count || 0;
 
       if (totalCount === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           status: false,
           msg: 'No followings found',
-          totalFollowings: 0
+          data: []
         });
       }
 

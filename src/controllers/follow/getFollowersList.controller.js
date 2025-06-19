@@ -16,21 +16,25 @@ module.exports = () => {
     const offset = (_page - 1) * _limit;
 
     try {
-      const [countResult] = await sqlQuery(`
+      const [countResult] = await sqlQuery(
+        `
         SELECT COUNT(*) AS count FROM followers WHERE followTo = ?
-      `, [userID]);
+      `,
+        [userID]
+      );
 
       const totalCount = countResult?.count || 0;
 
       if (totalCount === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           status: false,
           msg: 'No followers found',
-          totalFollowers: 0
+          data: []
         });
       }
 
-      const followersList = await sqlQuery(`
+      const followersList = await sqlQuery(
+        `
         SELECT 
           u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic
         FROM followers f
@@ -38,7 +42,9 @@ module.exports = () => {
         WHERE f.followTo = ?
         ORDER BY f.followAt DESC
         LIMIT ? OFFSET ?
-      `, [userID, _limit, offset]);
+      `,
+        [userID, _limit, offset]
+      );
 
       if (followersList.length > 0) {
         followersList[followersList.length - 1].haveMore = totalCount > _page * _limit;
@@ -48,9 +54,8 @@ module.exports = () => {
       return res.status(200).json({
         status: true,
         msg: 'Followers list fetched successfully',
-        data: followersList,
+        data: followersList
       });
-
     } catch (error) {
       console.error('Error fetching followers list:', error);
       return res.status(500).json({

@@ -132,7 +132,7 @@ module.exports = {
   getAllUsers: async function (search = '') {
     try {
       const userList = await sqlQuery(
-        `SELECT * from db_users where userFirstName like '%${search}%' or userSurname like '%${search}%' or userEmail like '%${search}%'
+        `SELECT * from db_users where CONCAT( userFirstName,' ', userSurname ) LIKE '%${search}%' or userEmail like '%${search}%'
         or userPhone like '%${search}%' AND (userDeleted IS NULL OR userDeleted != 1)`
       );
       if (userList) return userList;

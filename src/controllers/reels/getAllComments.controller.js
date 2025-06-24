@@ -18,7 +18,7 @@ module.exports = () => {
 
     try {
       var comments = await sqlQuery(`
-        SELECT db_reel_comments.*,db_users.userFirstName, db_users.userSurname
+        SELECT db_reel_comments.*,db_users.userFirstName, db_users.userSurname, db_users.profilePic
         FROM db_reel_comments
         LEFT JOIN db_users ON db_reel_comments.userId = db_users.userID
         WHERE reelId = '${reelId}'

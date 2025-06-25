@@ -32,7 +32,7 @@ module.exports = () => {
 
       const followingList = await sqlQuery(`
         SELECT 
-          u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic
+          u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic, u.userGender
         FROM followers f
         JOIN db_users u ON f.followTo = u.userID
         WHERE f.followBy = ?

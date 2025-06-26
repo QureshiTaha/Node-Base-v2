@@ -79,7 +79,7 @@ module.exports = () => {
           );
 
           const transactionValues = batch.map(id => 
-            `('${uuidv4()}', '${id}', '${senderId}', '${receiverId}', NOW())`
+            `('${transactionId}', '${id}', '${senderId}', '${receiverId}', NOW())`
           ).join(',');
 
           await sqlQuery(

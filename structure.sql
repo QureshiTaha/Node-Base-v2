@@ -255,3 +255,34 @@ CREATE TABLE otp_verification (
   `coolDownTime` DATETIME,
   FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE
 );
+
+CREATE TABLE `db_payments` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `paymentId` VARCHAR(100) NOT NULL UNIQUE,
+  `userId` VARCHAR(100) NOT NULL,
+  `amount` DECIMAL(10,2) NOT NULL,
+  `coinCount` INT DEFAULT 0,
+  `paymentMethod` VARCHAR(50),
+  `status` VARCHAR(20) DEFAULT 'pending',
+  `transactionId` VARCHAR(100),
+  `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
+);
+
+
+CREATE TABLE `purchases` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `purchaseId` VARCHAR(100) NOT NULL UNIQUE,
+  `userId` VARCHAR(100) NOT NULL,
+  `coinCount` INT NOT NULL,
+  `amountPaid` DECIMAL(10,2) NOT NULL,
+  `paymentId` VARCHAR(100),
+  `status` VARCHAR(20) DEFAULT 'pending',
+  `purchasedAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`),
+  FOREIGN KEY (`paymentId`) REFERENCES `payments` (`paymentId`)
+);

@@ -15,6 +15,7 @@ const {
     deleteOfferController,
     getAllOffersController,
     getOfferByIdController,
+    userTransactionController,
 } = coinsController();
 
 const router = express.Router();
@@ -32,5 +33,6 @@ router.route('/update-offer').post(updateOfferController);
 router.route('/delete-offer/:offerId').delete(deleteOfferController);
 router.route('/all-offers').get(getAllOffersController);
 router.route('/offer/:offerId').get(getOfferByIdController);
+router.route('/user-transaction/:userID').get(userTransactionController);
 
 module.exports = router;

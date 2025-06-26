@@ -5,7 +5,6 @@ module.exports = () => {
   return async (req, res) => {
     const { userID, count } = req.body;
 
-    // Validation
     if (!userID || !count) {
       return res.status(400).json({ status: false, msg: 'userID and count are required' });
     }
@@ -15,7 +14,7 @@ module.exports = () => {
 
     try {
       const [userResult] = await sqlQuery(
-        `SELECT * FROM db_users WHERE userID = ? AND userDeleted IS NULL LIMIT 1`, 
+        `SELECT * FROM db_users WHERE userID = ? AND userDeleted IS NULL LIMIT 1`,
         [userID]
       );
 
@@ -23,8 +22,9 @@ module.exports = () => {
         return res.status(404).json({ status: false, msg: 'User not found or deleted' });
       }
 
+      // Get available coins from coin_store table
       const coinsResult = await sqlQuery(
-        `SELECT coinStoreId FROM coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`, 
+        `SELECT coinStoreId FROM coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
         [parseInt(count)]
       );
 
@@ -43,56 +43,56 @@ module.exports = () => {
       }
 
       const purchaseId = uuidv4();
-      const batchSize = 100;  
-      const concurrencyLimit = 5;
+      const coinStoreIds = coinsResult.map(c => c.coinStoreId);
+      const placeholders = coinStoreIds.map(() => '?').join(',');
 
-      const batches = [];
-      for (let i = 0; i < coinsResult.length; i += batchSize) {
-        batches.push(coinsResult.slice(i, i + batchSize));
-      }
-
-      // Wrap entire transaction
+      // Start full transaction
       await sqlQuery('START TRANSACTION');
 
-      const runningBatches = new Set();
+      // Update coin ownership
+      await sqlQuery(
+        `UPDATE coin_store 
+         SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
+         WHERE coinStoreId IN (${placeholders})`,
+        [userID, purchaseId, ...coinStoreIds]
+      );
 
-      for (const batch of batches) {
-        if (runningBatches.size >= concurrencyLimit) {
-          await Promise.race(runningBatches);
-        }
+      // Prepare bulk insert into coin_transaction
+      const insertValues = [];
+      const insertParams = [];
+      const senderId = "Purchased from Store"; // Use a fixed sender ID for store purchases
+      const coinTransactionId = uuidv4();
 
-        const batchPromise = (async () => {
-          const placeholders = batch.map(() => '?').join(',');
-          const coinIds = batch.map(c => c.coinStoreId);
-          await sqlQuery(
-            `UPDATE coin_store 
-             SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
-             WHERE coinStoreId IN (${placeholders})`,
-            [userID, purchaseId, ...coinIds]
-          );
-        })();
-
-        runningBatches.add(batchPromise);
-        batchPromise.finally(() => runningBatches.delete(batchPromise));
+      for (const coin of coinsResult) {
+        insertValues.push('(?, ?, ?, ?, NOW())');
+        insertParams.push(coinTransactionId, coin.coinStoreId, senderId, userID);
       }
 
-      await Promise.all(runningBatches);
+      const insertQuery = `
+        INSERT INTO coin_transaction 
+        (coinTransactionId, coinId, senderId, receiverId, transactionDate)
+        VALUES ${insertValues.join(', ')}
+      `;
+
+      await sqlQuery(insertQuery, insertParams);
+
+      // Commit full transaction
       await sqlQuery('COMMIT');
 
       return res.status(200).json({
         status: true,
         msg: `${coinsResult.length} coin(s) purchased successfully`,
         purchaseId,
-        coinIds: coinsResult.map(c => c.coinStoreId)
+        coinIds: coinStoreIds
       });
 
     } catch (error) {
       await sqlQuery('ROLLBACK');
       console.error('Purchase error:', error);
-      return res.status(500).json({ 
-        status: false, 
-        msg: 'Internal server error', 
-        error: error.message 
+      return res.status(500).json({
+        status: false,
+        msg: 'Internal server error',
+        error: error.message
       });
     }
   };

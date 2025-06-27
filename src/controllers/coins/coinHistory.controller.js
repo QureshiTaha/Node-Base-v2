@@ -17,7 +17,7 @@ module.exports = () => {
         SELECT  cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt,
           CASE WHEN cs.ownerId IS NULL THEN TRUE ELSE FALSE END AS isAvailable,
           u.userFirstName, u.userSurname, u.userPhone
-        FROM coin_store cs
+        FROM db_coin_store cs
         LEFT JOIN db_users u ON cs.ownerId = u.userID
         WHERE cs.coinStoreId = ?
         `,

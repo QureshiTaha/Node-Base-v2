@@ -11,7 +11,7 @@ module.exports = (dependencies) => {
 
     try {
       const otpRecords = await sqlQuery(
-        'SELECT otp, attempt, dateUpdated, coolDownTime FROM otp_verification WHERE userID = ? LIMIT 1',
+        'SELECT otp, attempt, dateUpdated, coolDownTime FROM db_otp_verification WHERE userID = ? LIMIT 1',
         [userID]
       );
 
@@ -29,14 +29,14 @@ module.exports = (dependencies) => {
 
       if (String(otp) !== String(record.otp)) {
         await sqlQuery(
-          'UPDATE otp_verification SET attempt = attempt + 1, dateUpdated = ? WHERE userID = ?',
+          'UPDATE db_otp_verification SET attempt = attempt + 1, dateUpdated = ? WHERE userID = ?',
           [now, userID]
         );
 
         return res.status(400).json({ status: false, msg: 'Invalid OTP. Please try again.' });
       }
 
-      await sqlQuery('DELETE FROM otp_verification WHERE userID = ?', [userID]);
+      await sqlQuery('DELETE FROM db_otp_verification WHERE userID = ?', [userID]);
 
       return res.status(200).json({ status: true, msg: 'OTP verified successfully' });
 

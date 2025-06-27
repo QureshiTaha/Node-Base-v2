@@ -9,7 +9,7 @@ module.exports = () => {
     const offset = (_page - 1) * _limit;
 
     try {
-      const totalCountResult = await sqlQuery(`SELECT COUNT(*) as count FROM coin_store`);
+      const totalCountResult = await sqlQuery(`SELECT COUNT(*) as count FROM db_coin_store`);
       const totalCount = totalCountResult[0]?.count || 0;
 
       const result = await sqlQuery(`
@@ -21,7 +21,7 @@ module.exports = () => {
             ELSE FALSE 
           END AS isAvailable,
           u.userFirstName, u.userSurname, u.userPhone
-        FROM coin_store cs
+        FROM db_coin_store cs
         LEFT JOIN db_users u ON cs.ownerId = u.userID
         ORDER BY cs.purchasedAt DESC
         LIMIT ? OFFSET ?

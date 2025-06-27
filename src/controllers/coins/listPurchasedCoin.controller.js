@@ -11,7 +11,7 @@ module.exports = () => {
     try {
       const [countResult] = await sqlQuery(`
         SELECT COUNT(*) AS count
-        FROM coin_store
+        FROM db_coin_store
         WHERE ownerId IS NOT NULL
       `);
 
@@ -28,7 +28,7 @@ module.exports = () => {
         SELECT 
           cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt,
           u.userFirstName, u.userSurname, u.userPhone
-        FROM coin_store cs
+        FROM db_coin_store cs
         JOIN db_users u ON cs.ownerId = u.userID
         WHERE cs.ownerId IS NOT NULL
         ORDER BY cs.purchasedAt DESC

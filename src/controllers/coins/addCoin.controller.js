@@ -41,7 +41,7 @@ module.exports = () => {
         }
         const runBatchInsert = async (batch) => {
           const insertQuery = `
-      INSERT INTO coin_store (coinStoreId)
+      INSERT INTO db_coin_store (coinStoreId)
       VALUES ${batch.join(', ')}
     `;
           await sqlQuery(insertQuery);

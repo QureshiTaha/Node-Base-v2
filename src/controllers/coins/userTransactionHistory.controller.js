@@ -8,43 +8,63 @@ module.exports = () => {
     const offset = (page - 1) * limit;
 
     try {
-      const transactions = await sqlQuery(`
-        SELECT 
-          ct.coinTransactionId,
-          ct.senderId,
-          IFNULL(sender.userFirstName, 'Store') AS senderFirstName,
-          IFNULL(sender.userSurname, '') AS senderSurname,
-          ct.receiverId,
-          IFNULL(receiver.userFirstName, 'Unknown') AS receiverFirstName,
-          IFNULL(receiver.userSurname, '') AS receiverSurname,
-          MAX(ct.transactionDate) AS transactionDate,
-          COUNT(*) AS coinCount
-        FROM coin_transaction ct
-        LEFT JOIN db_users sender ON ct.senderId = sender.userID
-        LEFT JOIN db_users receiver ON ct.receiverId = receiver.userID
-        WHERE ct.senderId = ? OR ct.receiverId = ?
-        GROUP BY ct.coinTransactionId, ct.senderId, ct.receiverId
+      const unifiedTransactions = await sqlQuery(`
+        SELECT * FROM (
+          SELECT 
+            ct.coinTransactionId,
+            ct.senderId,
+            IFNULL(sender.userFirstName, 'Store') AS senderFirstName,
+            IFNULL(sender.userSurname, '') AS senderSurname,
+            ct.receiverId,
+            IFNULL(receiver.userFirstName, 'Unknown') AS receiverFirstName,
+            IFNULL(receiver.userSurname, '') AS receiverSurname,
+            MAX(ct.transactionDate) AS transactionDate,
+            SUM(ct.coinCount) AS coinCount
+          FROM db_coin_transaction ct
+          LEFT JOIN db_users sender ON ct.senderId = sender.userID
+          LEFT JOIN db_users receiver ON ct.receiverId = receiver.userID
+          WHERE ct.senderId = ? OR ct.receiverId = ?
+          GROUP BY ct.coinTransactionId, ct.senderId, ct.receiverId
+
+          UNION ALL
+
+          SELECT 
+            p.paymentId AS coinTransactionId,
+            'STORE' AS senderId,
+            'Store' AS senderFirstName,
+            '' AS senderSurname,
+            p.userId AS receiverId,
+            IFNULL(u.userFirstName, 'Unknown') AS receiverFirstName,
+            IFNULL(u.userSurname, '') AS receiverSurname,
+            p.createdAt AS transactionDate,
+            p.coinCount
+          FROM db_payments p
+          LEFT JOIN db_users u ON p.userId = u.userID
+          WHERE p.userId = ?
+        ) AS combined
         ORDER BY transactionDate DESC
         LIMIT ? OFFSET ?
-      `, [userID, userID, limit, offset]);
+      `, [userID, userID, userID, limit, offset]);
 
       const totalCountResult = await sqlQuery(`
-        SELECT COUNT(DISTINCT coinTransactionId) AS totalCount 
-        FROM coin_transaction 
-        WHERE senderId = ? OR receiverId = ?
-      `, [userID, userID]);
+        SELECT (
+          (SELECT COUNT(DISTINCT coinTransactionId) FROM db_coin_transaction WHERE senderId = ? OR receiverId = ?) +
+          (SELECT COUNT(*) FROM db_payments WHERE userId = ?)
+        ) AS totalCount
+      `, [userID, userID, userID]);
 
       const totalCount = totalCountResult[0]?.totalCount || 0;
       const haveMore = (offset + limit) < totalCount;
 
       return res.status(200).json({
         status: true,
-        data: transactions.map(row => ({
+        data: unifiedTransactions.map(row => ({
           ...row,
           haveMore,
           totalCount
         }))
       });
+
     } catch (err) {
       console.error(err);
       return res.status(500).json({ status: false, msg: "Internal Server Error" });

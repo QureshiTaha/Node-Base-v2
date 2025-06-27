@@ -3,95 +3,89 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = () => {
   return async (req, res) => {
-    const { userID, count } = req.body;
+    const { userID, offerId } = req.body;
 
-    if (!userID || !count) {
-      return res.status(400).json({ status: false, msg: 'userID and count are required' });
-    }
-    if (isNaN(count) || count <= 0) {
-      return res.status(400).json({ status: false, msg: 'Count must be a positive number' });
+    if (!userID || !offerId) {
+      return res.status(400).json({ status: false, msg: 'userID and offerId are required' });
     }
 
     try {
-      const [userResult] = await sqlQuery(
-        `SELECT * FROM db_users WHERE userID = ? AND userDeleted IS NULL LIMIT 1`,
-        [userID]
-      );
-
-      if (!userResult) {
+      const user = await sqlQuery(`SELECT * FROM db_users WHERE userID = ? AND userDeleted IS NULL LIMIT 1`, [userID]);
+      if (user.length === 0) {
         return res.status(404).json({ status: false, msg: 'User not found or deleted' });
       }
 
-      // Get available coins from coin_store table
-      const coinsResult = await sqlQuery(
-        `SELECT coinStoreId FROM coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
-        [parseInt(count)]
-      );
-
-      if (coinsResult.length === 0) {
-        return res.status(400).json({
-          status: false,
-          msg: 'No coins available in stock. Please contact admin or wait for restock.'
-        });
+      const [offer] = await sqlQuery(`SELECT * FROM db_coin_offers WHERE offerId = ? AND isActive = 1 LIMIT 1`, [offerId]);
+      if (!offer) {
+        return res.status(404).json({ status: false, msg: 'Offer not found or inactive' });
       }
 
-      if (coinsResult.length < count) {
+      const coinAmount = offer.coinAmount;
+      const offerPrice = offer.offerPrice;
+
+      const coinsResult = await sqlQuery(
+        `SELECT coinStoreId FROM db_coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
+        [coinAmount]
+      );
+
+      if (coinsResult.length < coinAmount) {
         return res.status(400).json({
           status: false,
-          msg: `Only ${coinsResult.length} coins available for purchase right now`
+          msg: `Only ${coinsResult.length} unowned coins available`
         });
       }
 
       const purchaseId = uuidv4();
-      const coinStoreIds = coinsResult.map(c => c.coinStoreId);
-      const placeholders = coinStoreIds.map(() => '?').join(',');
+      const paymentId = uuidv4();
+      const transactionId = uuidv4();
 
-      // Start full transaction
       await sqlQuery('START TRANSACTION');
 
-      // Update coin ownership
-      await sqlQuery(
-        `UPDATE coin_store 
-         SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
-         WHERE coinStoreId IN (${placeholders})`,
-        [userID, purchaseId, ...coinStoreIds]
-      );
+      try {
+        const coinIds = coinsResult.map(c => c.coinStoreId);
+        const placeholders = coinIds.map(() => '?').join(',');
 
-      // Prepare bulk insert into coin_transaction
-      const insertValues = [];
-      const insertParams = [];
-      const senderId = "Purchased from Store"; // Use a fixed sender ID for store purchases
-      const coinTransactionId = uuidv4();
+        await sqlQuery(
+          `UPDATE db_coin_store 
+           SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
+           WHERE coinStoreId IN (${placeholders})`,
+          [userID, purchaseId, ...coinIds]
+        );
 
-      for (const coin of coinsResult) {
-        insertValues.push('(?, ?, ?, ?, NOW())');
-        insertParams.push(coinTransactionId, coin.coinStoreId, senderId, userID);
+        await sqlQuery(
+          `INSERT INTO db_payments (
+            paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+          [
+            paymentId,
+            userID,
+            offerPrice, // Correct amount from offer
+            coinAmount,
+            'internal',
+            'completed',
+            transactionId
+          ]
+        );
+
+        await sqlQuery('COMMIT');
+      } catch (err) {
+        await sqlQuery('ROLLBACK');
+        throw err;
       }
-
-      const insertQuery = `
-        INSERT INTO coin_transaction 
-        (coinTransactionId, coinId, senderId, receiverId, transactionDate)
-        VALUES ${insertValues.join(', ')}
-      `;
-
-      await sqlQuery(insertQuery, insertParams);
-
-      // Commit full transaction
-      await sqlQuery('COMMIT');
 
       return res.status(200).json({
         status: true,
-        msg: `${coinsResult.length} coin(s) purchased successfully`,
+        msg: `${coinAmount} coins purchased successfully`,
         purchaseId,
-        coinIds: coinStoreIds
+        coinIds: coinsResult.map(c => c.coinStoreId),
+        paymentId
       });
 
     } catch (error) {
-      await sqlQuery('ROLLBACK');
-      console.error('Purchase error:', error);
+      console.error('Error purchasing coins:', error);
       return res.status(500).json({
         status: false,
-        msg: 'Internal server error',
+        msg: 'Internal Server Error',
         error: error.message
       });
     }

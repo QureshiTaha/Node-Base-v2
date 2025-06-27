@@ -10,7 +10,7 @@ module.exports = () => {
 
     try {
       const [totalCountResult] = await sqlQuery(`
-        SELECT COUNT(*) as count FROM coin_store WHERE ownerId IS NULL
+        SELECT COUNT(*) as count FROM db_coin_store WHERE ownerId IS NULL
       `);
 
       const totalCount = totalCountResult?.count || 0;
@@ -26,7 +26,7 @@ module.exports = () => {
       const result = await sqlQuery(
         `
         SELECT cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt
-        FROM coin_store cs
+        FROM db_coin_store cs
         WHERE cs.ownerId IS NULL
         ORDER BY cs.purchasedAt DESC
         LIMIT ? OFFSET ?

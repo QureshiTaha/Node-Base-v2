@@ -21,14 +21,14 @@ module.exports = () => {
     }
 
     try {
-      const [existing] = await sqlQuery(`SELECT * FROM coin_offers WHERE offerId = ?`, [offerId]);
+      const [existing] = await sqlQuery(`SELECT * FROM db_coin_offers WHERE offerId = ?`, [offerId]);
 
       if (!existing) {
         return res.status(404).json({ status: false, msg: 'Offer not found' });
       }
 
       await sqlQuery(
-        `UPDATE coin_offers 
+        `UPDATE db_coin_offers 
          SET coinAmount = ?, actualPrice = ?, offerPrice = ?, isActive = ? 
          WHERE offerId = ?`,
         [coinAmount, actualPrice, offerPrice, isActive === false ? 0 : 1, offerId]

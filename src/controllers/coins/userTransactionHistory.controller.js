@@ -19,7 +19,7 @@ module.exports = () => {
           IFNULL(receiver.userSurname, '') AS receiverSurname,
           MAX(ct.transactionDate) AS transactionDate,
           COUNT(*) AS coinCount
-        FROM coin_transaction ct
+        FROM db_coin_transaction ct
         LEFT JOIN db_users sender ON ct.senderId = sender.userID
         LEFT JOIN db_users receiver ON ct.receiverId = receiver.userID
         WHERE ct.senderId = ? OR ct.receiverId = ?
@@ -30,7 +30,7 @@ module.exports = () => {
 
       const totalCountResult = await sqlQuery(`
         SELECT COUNT(DISTINCT coinTransactionId) AS totalCount 
-        FROM coin_transaction 
+        FROM db_coin_transaction 
         WHERE senderId = ? OR receiverId = ?
       `, [userID, userID]);
 

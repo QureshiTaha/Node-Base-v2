@@ -8,7 +8,7 @@ module.exports = () => {
     }
 
     try {
-      const [offer] = await sqlQuery(`SELECT * FROM coin_offers WHERE offerId = ?`, [offerId]);
+      const [offer] = await sqlQuery(`SELECT * FROM db_coin_offers WHERE offerId = ?`, [offerId]);
 
       if (!offer) {
         return res.status(404).json({ status: false, msg: 'Offer not found' });

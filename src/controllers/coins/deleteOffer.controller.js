@@ -10,7 +10,7 @@ module.exports = () => {
 
     try {
       const [offer] = await sqlQuery(
-        `SELECT * FROM coin_offers WHERE offerId = ?`,
+        `SELECT * FROM db_coin_offers WHERE offerId = ?`,
         [offerId]
       );
 
@@ -19,7 +19,7 @@ module.exports = () => {
       }
 
       await sqlQuery(
-        `DELETE FROM coin_offers WHERE offerId = ?`,
+        `DELETE FROM db_coin_offers WHERE offerId = ?`,
         [offerId]
       );
 

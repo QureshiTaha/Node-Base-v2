@@ -22,9 +22,9 @@ module.exports = () => {
         return res.status(404).json({ status: false, msg: 'User not found or deleted' });
       }
 
-      // Get available coins from coin_store table
+      // Get available coins from db_coin_store table
       const coinsResult = await sqlQuery(
-        `SELECT coinStoreId FROM coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
+        `SELECT coinStoreId FROM db_coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
         [parseInt(count)]
       );
 
@@ -51,13 +51,13 @@ module.exports = () => {
 
       // Update coin ownership
       await sqlQuery(
-        `UPDATE coin_store 
+        `UPDATE db_coin_store 
          SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
          WHERE coinStoreId IN (${placeholders})`,
         [userID, purchaseId, ...coinStoreIds]
       );
 
-      // Prepare bulk insert into coin_transaction
+      // Prepare bulk insert into db_coin_transaction
       const insertValues = [];
       const insertParams = [];
       const senderId = "Purchased from Store"; // Use a fixed sender ID for store purchases
@@ -69,7 +69,7 @@ module.exports = () => {
       }
 
       const insertQuery = `
-        INSERT INTO coin_transaction 
+        INSERT INTO db_coin_transaction 
         (coinTransactionId, coinId, senderId, receiverId, transactionDate)
         VALUES ${insertValues.join(', ')}
       `;

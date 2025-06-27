@@ -43,7 +43,7 @@ module.exports = () => {
       }
 
       const coinsToTransfer = await sqlQuery(
-        `SELECT coinStoreId FROM coin_store 
+        `SELECT coinStoreId FROM db_coin_store 
          WHERE ownerId = ? 
          LIMIT ? 
          FOR UPDATE`,
@@ -72,7 +72,7 @@ module.exports = () => {
           const transactionId = uuidv4();
           
           await sqlQuery(
-            `UPDATE coin_store 
+            `UPDATE db_coin_store 
              SET ownerId = ? 
              WHERE coinStoreId IN (?)`,
             [receiverId, batch]
@@ -83,7 +83,7 @@ module.exports = () => {
           ).join(',');
 
           await sqlQuery(
-            `INSERT INTO coin_transaction 
+            `INSERT INTO db_coin_transaction 
              (coinTransactionId, coinId, senderId, receiverId, transactionDate)
              VALUES ${transactionValues}`
           );

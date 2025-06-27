@@ -25,7 +25,7 @@ module.exports = () => {
            u.userPhone,
            COUNT(cs.id) AS totalCoins
          FROM db_users u
-         LEFT JOIN coin_store cs ON u.userID = cs.ownerId
+         LEFT JOIN db_coin_store cs ON u.userID = cs.ownerId
          WHERE u.userID = ?
          GROUP BY u.userID, u.userFirstName, u.userSurname, u.userPhone`,
         [userID]
@@ -42,7 +42,7 @@ module.exports = () => {
       const coins = await sqlQuery(
         `SELECT 
            id, coinStoreId, purchaseId, purchasedAt
-         FROM coin_store
+         FROM db_coin_store
          WHERE ownerId = ?
          ORDER BY purchasedAt DESC
          LIMIT ? OFFSET ?`,

@@ -29,7 +29,7 @@ module.exports = (dependencies) => {
       let coolDownTime = null;
 
       const existing = await sqlQuery(
-        'SELECT attempt, coolDownTime FROM otp_verification WHERE userID = ? LIMIT 1',
+        'SELECT attempt, coolDownTime FROM db_otp_verification WHERE userID = ? LIMIT 1',
         [userID]
       );
 
@@ -62,7 +62,7 @@ module.exports = (dependencies) => {
       }
 
       await sqlQuery(
-        `INSERT INTO otp_verification (userID, otp, attempt, dateUpdated, coolDownTime)
+        `INSERT INTO db_otp_verification (userID, otp, attempt, dateUpdated, coolDownTime)
          VALUES (?, ?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE
            otp = VALUES(otp),

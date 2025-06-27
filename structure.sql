@@ -197,7 +197,7 @@ CREATE TABLE
 
 
 CREATE TABLE
-    `coin_store` (
+    `db_coin_store` (
         `id` INT(11) NOT NULL AUTO_INCREMENT,
         `coinStoreId` VARCHAR(100) NOT NULL,
         `ownerId` VARCHAR(100) NULL,
@@ -206,7 +206,7 @@ CREATE TABLE
         PRIMARY KEY (id)
     );
 
-CREATE TABLE `coin_transaction` (
+CREATE TABLE `db_coin_transaction` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `coinTransactionId` CHAR(36) NOT NULL,
     `coinId` CHAR(36) NOT NULL,
@@ -236,7 +236,7 @@ CREATE TABLE followers (
 -- `ADD` COLUMN profilePic VARCHAR(255) DEFAULT NULL;
 -- );
 
-CREATE TABLE coin_offers (
+CREATE TABLE db_coin_offers (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `offerId` VARCHAR(36) NOT NULL UNIQUE,
   `coinAmount` INT NOT NULL,
@@ -246,7 +246,7 @@ CREATE TABLE coin_offers (
   `isActive` TINYINT(1) DEFAULT 1
 );
 
-CREATE TABLE otp_verification (
+CREATE TABLE db_otp_verification (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `userID` VARCHAR(255) UNIQUE,
   `otp` VARCHAR(6),

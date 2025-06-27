@@ -21,7 +21,7 @@ module.exports = () => {
     try {
       // Optional: Prevent duplicate active offer
       const [existing] = await sqlQuery(
-        `SELECT id FROM coin_offers WHERE coinAmount = ? AND isActive = 1`,
+        `SELECT id FROM db_coin_offers WHERE coinAmount = ? AND isActive = 1`,
         [coinAmount]
       );
 
@@ -33,7 +33,7 @@ module.exports = () => {
       }
 
       await sqlQuery(
-        `INSERT INTO coin_offers (offerId, coinAmount, actualPrice, offerPrice, isActive) VALUES (?, ?, ?, ?, 1)`,
+        `INSERT INTO db_coin_offers (offerId, coinAmount, actualPrice, offerPrice, isActive) VALUES (?, ?, ?, ?, 1)`,
         [offerId, coinAmount, actualPrice, offerPrice]
       );
 

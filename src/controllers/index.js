@@ -4,6 +4,7 @@ const projectController = require('./project');
 const taskController = require('./task');
 const logsController = require('./Logs');
 const chatController = require('./chats');
+const dataControllers = require('./data');
 
 module.exports = {
   testController,
@@ -11,5 +12,6 @@ module.exports = {
   projectController,
   taskController,
   logsController,
-  chatController
+  chatController,
+  dataControllers
 };

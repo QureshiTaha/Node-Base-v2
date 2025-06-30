@@ -192,3 +192,16 @@ CREATE TABLE
     )
 CREATE TABLE
     `db_task_tags` (`id` INT (11) NOT NULL AUTO_INCREMENT, `tag_name` VARCHAR(50) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `tag_name` (`tag_name`), KEY `idx_task_tags_tag_name` (`tag_name`))
+CREATE TABLE
+    `db_data` (`id` INT AUTO_INCREMENT PRIMARY KEY, `data_value` TEXT NOT NULL, `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+
+CREATE TABLE
+    `db_datameta` (
+        `id` INT AUTO_INCREMENT PRIMARY KEY,
+        `data_id` INT NOT NULL, -- Foreign key to db_data
+        `meta_key` VARCHAR(255) NOT NULL,
+        `meta_value` longtext NOT NULL,
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (`data_id`) REFERENCES `db_data` (`id`) ON DELETE CASCADE
+    );

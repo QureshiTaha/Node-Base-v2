@@ -34,7 +34,7 @@ module.exports = () => {
       }
 
       const [existingFollow] = await sqlQuery(
-        `SELECT id FROM followers WHERE followBy = ? AND followTo = ?`,
+        `SELECT id FROM db_followers WHERE followBy = ? AND followTo = ?`,
         [followBy, followTo]
       );
 
@@ -46,7 +46,7 @@ module.exports = () => {
       }
 
       await sqlQuery(
-        `INSERT INTO followers (followBy, followTo) VALUES (?, ?)`,
+        `INSERT INTO db_followers (followBy, followTo) VALUES (?, ?)`,
         [followBy, followTo]
       );
 

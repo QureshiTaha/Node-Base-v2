@@ -4,7 +4,7 @@ const followUseCase = {
 
   checkIfFollowing: async function (followBy, followTo) {
     try {
-      const query = `SELECT count(1) as count FROM followers WHERE followBy = ? AND followTo = ?`;
+      const query = `SELECT count(1) as count FROM db_followers WHERE followBy = ? AND followTo = ?`;
       const result = await sqlQuery(query, [followBy, followTo]);
 
       if (result.length > 0 && result[0].count > 0) {
@@ -27,7 +27,7 @@ const followUseCase = {
       if (!check.success) return check;
       if (check.data) return { success: false, message: 'Already following this user' };
 
-      const query = `INSERT INTO followers (followBy, followTo, followAt) VALUES (?, ?, NOW())`;
+      const query = `INSERT INTO db_followers (followBy, followTo, followAt) VALUES (?, ?, NOW())`;
       await sqlQuery(query, [followBy, followTo]);
 
       return { success: true, message: 'Successfully followed user' };

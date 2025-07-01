@@ -217,7 +217,7 @@ CREATE TABLE `db_coin_transaction` (
 );
 
 
-CREATE TABLE followers (
+CREATE TABLE db_followers (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `followBy` VARCHAR(50) NOT NULL,
   `followTo` VARCHAR(50) NOT NULL,

@@ -36,7 +36,7 @@ module.exports = () => {
 
       // Check if follow relationship exists
       const [existingFollow] = await sqlQuery(
-        `SELECT id FROM followers WHERE followBy = ? AND followTo = ?`,
+        `SELECT id FROM db_followers WHERE followBy = ? AND followTo = ?`,
         [followBy, followTo]
       );
 
@@ -49,7 +49,7 @@ module.exports = () => {
 
       // Delete follow record
       await sqlQuery(
-        `DELETE FROM followers WHERE followBy = ? AND followTo = ?`,
+        `DELETE FROM db_followers WHERE followBy = ? AND followTo = ?`,
         [followBy, followTo]
       );
 

@@ -14,10 +14,14 @@
     ACCESS_LOGGING=false
     ERROR_LOGGING=false
    ```
-4. Start the server using `npm start`.
+
+4. Setup the Database use Stricture from ***structure.sql***
+
+5. Setup your Frebase SDK file ***taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json***
+
+6. Start the server using `npm start`.
 
 ## API Endpoints
 - **Login**: `POST /api/v1/users/login`
-- **Get Books**: `GET /api/v1/books/?search=<query>`
-- **Get Books by Id**: `GET /api/v1/books/<bookID>`
-- **Add Book**: `POST /api/v1/books/`
+- All the other Endpoints are Listed in Postman JSON file import it in your postman to use it ***Task Management.postman_collection.json***
+

@@ -205,3 +205,19 @@ CREATE TABLE
         `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (`data_id`) REFERENCES `db_data` (`id`) ON DELETE CASCADE
     );
+
+CREATE TABLE
+    `db_data_access` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `data_id` INT (11) NOT NULL,
+        `userID` VARCHAR(100) NOT NULL,
+        `granted_by` VARCHAR(100) DEFAULT NULL,
+        `granted_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `data_id` (`data_id`, `userID`),
+        KEY `userID` (`userID`),
+        KEY `db_data_access_ibfk_3` (`granted_by`),
+        CONSTRAINT `db_data_access_ibfk_1` FOREIGN KEY (`data_id`) REFERENCES `db_data` (`id`) ON DELETE CASCADE,
+        CONSTRAINT `db_data_access_ibfk_2` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE,
+        CONSTRAINT `db_data_access_ibfk_3` FOREIGN KEY (`granted_by`) REFERENCES `db_users` (`userID`)
+    )

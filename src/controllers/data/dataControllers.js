@@ -4,18 +4,22 @@ module.exports = (dependencies) => {
     return {
         addDataController: async (req, res) => {
             try {
-                const { data_value } = req.body;
-                if (!data_value) {
-                    return res.status(400).json({ success: false, message: 'data_value is required' });
+                const { data_value, userID } = req.body;
+                if (!data_value || !userID) {
+                    return res.status(400).json({ success: false, message: 'data_value and userID is required' });
                 }
-                isExist = await dataUseCase.checkIfExist({ data_value, data_id: null });
+                isExist = await dataUseCase.checkIfExist({ data_value, data_id: null, userID });
                 if (isExist.success === false) {
                     return res.status(400).json({ success: false, message: isExist.data });
                 } else if (isExist.data.count > 0) {
                     return res.status(400).json({ success: false, message: 'data_value already exists' });
                 } else {
+
                     const result = await dataUseCase.addData(data_value);
                     if (result) {
+                        console.log({ adminID: userID, userID: userID, data_id: result.data[0].id });
+
+                        await dataUseCase.grantAccess({ adminID: userID, userID: userID, data_id: result.data[0].id });
                         res.status(200).json({ success: result.success, data: result.data });
                     }
                 }
@@ -24,11 +28,42 @@ module.exports = (dependencies) => {
                 res.status(500).json({ success: false, message: error.message });
             }
         },
+        grantAccessController: async (req, res) => {
+            try {
+                const { data_id, userID, adminID } = req.body;
+                if (!data_id || !userID || !adminID) {
+                    return res.status(400).json({ success: false, message: 'data_id, adminID and userID are required' });
+                }
+                const result = await dataUseCase.grantAccess({ adminID, userID, data_id });
+                if (result) {
+                    res.status(200).json({ success: result.success, data: result.data });
+                }
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ success: false, message: error.message });
+            }
+        },
+        revokeAccessController: async (req, res) => {
+            try {
+                const { userID, fieldID } = req.params;
+
+                if (!userID || !fieldID) {
+                    return res.status(400).json({ success: false, message: 'userID and fieldID is required' });
+                }
+                const result = await dataUseCase.revokeAccess({ userID, data_id: fieldID });
+                if (result) {
+                    res.status(200).json({ success: result.success, data: result.data });
+                }
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ success: false, message: error.message });
+            }
+        },
         getDataController: async (req, res) => {
             try {
-                const { data_id } = req.params;
+                const { data_id, userID } = req.params;
 
-                const result = await dataUseCase.getData({ data_id });
+                const result = await dataUseCase.getData({ data_id, ...req.query, userID });
                 if (result) {
                     res.status(200).json({ success: true, data: result });
                 } else {
@@ -124,7 +159,9 @@ module.exports = (dependencies) => {
         getDataMetaByMetaIDController: async (req, res) => {
             try {
                 const { meta_id } = req.params;
-                const result = await dataUseCase.getDataMetaByMetaID({ meta_id });
+                const { page, limit } = req.query;
+
+                const result = await dataUseCase.getDataMetaByMetaID({ meta_id, ...req.query });
                 if (result) {
                     res.status(200).json({ success: true, data: result });
                 } else {

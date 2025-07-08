@@ -138,7 +138,6 @@ module.exports = {
       } else {
         query += `  (userDeleted IS NULL OR userDeleted != 1)`
       }
-      console.log(query);
 
       const userList = await sqlQuery(
         query

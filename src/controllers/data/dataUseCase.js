@@ -6,7 +6,12 @@ module.exports = {
         try {
             const query = `INSERT INTO db_data (data_value) VALUES (?)`;
             const result = await sqlQuery(query, [data_value]);
-            return { success: true, data: result };
+            // Get the ID of the inserted data
+            if (result.affectedRows > 0) {
+                resultData = await sqlQuery(`SELECT * FROM db_data WHERE id = ?`, [result.insertId]);
+                return { success: true, data: resultData };
+
+            }
         } catch (error) {
             return { success: false, data: `Error adding data: ${error.message}` };
         }
@@ -21,8 +26,31 @@ module.exports = {
         }
 
     },
+    // 
+    grantAccess: async ({ adminID, userID, data_id }) => {
+        const query = `
+        INSERT IGNORE INTO db_data_access (data_id, userID, granted_by)
+        VALUES (?, ?, ?)
+    `;
+        try {
+            await sqlQuery(query, [data_id, userID, adminID]);
+            return { success: true, message: 'Access granted' };
+        } catch (error) {
+            return { success: false, message: error.message };
+        }
+    },
+    revokeAccess: async ({ userID, data_id }) => {
+        const query = `DELETE FROM db_data_access WHERE userID = ? AND data_id = ?`;
+        try {
+            await sqlQuery(query, [userID, data_id]);
+            return { success: true, message: 'Access revoked' };
+        } catch (error) {
+            return { success: false, message: error.message };
+        }
+    },
+
     // Get Data
-    getData: async ({ data_id, page = 1, limit = 10 }) => {
+    getAllData: async ({ data_id, page = 1, limit = 10 }) => {
         const offset = (page - 1) * limit;
         const queryParams = data_id ? [data_id] : [];
         const baseQuery = data_id ? `SELECT * FROM db_data WHERE id = ?` : `SELECT * FROM db_data ORDER BY id DESC LIMIT ? OFFSET ?`;
@@ -42,6 +70,47 @@ module.exports = {
             return { success: false, data: `Error getting data: ${error.message}` };
         }
     },
+
+    getData: async ({ userID, data_id, page = 1, limit = 10 }) => {
+        const offset = (page - 1) * limit;
+        const params = [userID];
+
+        let baseQuery = `
+        SELECT d.* FROM db_data d
+        INNER JOIN db_data_access a ON d.id = a.data_id
+        WHERE a.userID = ?
+    `;
+
+        if (data_id) {
+            baseQuery += ' AND d.id = ?';
+            params.push(data_id);
+        } else {
+            baseQuery += ` ORDER BY d.data_value ASC LIMIT ${limit} OFFSET ${offset}`;
+        }
+
+        const countQuery = `
+        SELECT COUNT(1) AS count FROM db_data d
+        INNER JOIN db_data_access a ON d.id = a.data_id
+        WHERE a.userID = ?
+        ${data_id ? ' AND d.id = ?' : ''}
+    `;
+
+        try {
+            var result = await sqlQuery(baseQuery, params);
+            const totalCount = await sqlQuery(countQuery, params);
+
+            if (result.length > 0) {
+                const haveMore = totalCount[0].count > offset + limit;
+                result[result.length - 1].haveMore = haveMore;
+                result[result.length - 1].totalCount = totalCount[0].count;
+            }
+
+            return { success: true, data: result };
+        } catch (error) {
+            return { success: false, data: `Error getting data: ${error.message}` };
+        }
+    },
+
 
     // Delete Data
     deleteData: async (data) => {
@@ -75,7 +144,7 @@ module.exports = {
             return { success: false, data: `Error getting data meta: ${error.message}` };
         }
     },
-    
+
     addDataMeta: async (data) => {
         const { data_id, meta_key, meta_value } = data;
         console.log("Data", data);

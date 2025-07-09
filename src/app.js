@@ -11,13 +11,14 @@ const database = require('./Modules/config');
 const routes = require('./routes');
 var logger = require('morgan');
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-API_PREFIX = process.env.API_PREFIX;
+app.use(bodyParser.json()); 
+const API_PREFIX = process.env.API_PREFIX || '/api/v1';
 const http = require('http');
 // var admin = require('firebase-admin');
 // var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 const Mail = require('./Modules/email');
-
+const {initializeSocket} = require('./Modules/socketManager');
+ 
 module.exports = {
   start: async () => {
     if (process.env.ACCESS_LOGGING === 'false') {
@@ -102,9 +103,14 @@ module.exports = {
 
     app.use(API_PREFIX, routes);
     var server = http.createServer(app);
+    initializeSocket(server);
 
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log('\x1b[32m%s\x1b[0m', `Node environment started listening on port:${port}`);
     });
+
+    // app.listen(port, () => {
+    //   console.log('\x1b[32m%s\x1b[0m', `Node environment started listening on port:${port}`);
+    // });
   }
 };

@@ -6,6 +6,7 @@ const taskController = require('./task');
 const logsController = require('./Logs');
 const coinsController = require('./coins');
 const followController = require('./follow');
+const chatController = require('./chats');
 
 module.exports = {
   testController,
@@ -16,4 +17,5 @@ module.exports = {
   logsController,
   coinsController,
   followController,
+  chatController,
 };

@@ -217,7 +217,7 @@ CREATE TABLE `db_coin_transaction` (
 );
 
 
-CREATE TABLE followers (
+CREATE TABLE db_followers (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `followBy` VARCHAR(50) NOT NULL,
   `followTo` VARCHAR(50) NOT NULL,
@@ -226,15 +226,6 @@ CREATE TABLE followers (
   INDEX (followBy),
   INDEX (followTo)
 );
-
-
--- ALTER TABLE db_users (
--- `ADD` COLUMN totalFollowers INT DEFAULT 0,
--- `ADD` COLUMN followings INT DEFAULT 0,
--- `ADD` COLUMN posts INT DEFAULT 0,
--- `ADD` COLUMN userBio TEXT DEFAULT NULL,
--- `ADD` COLUMN profilePic VARCHAR(255) DEFAULT NULL;
--- );
 
 CREATE TABLE db_coin_offers (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -271,18 +262,50 @@ CREATE TABLE `db_payments` (
   FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
 );
 
+CREATE TABLE
+    `db_chat_messages` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `messageID` VARCHAR(100) NOT NULL,
+        `senderID` VARCHAR(100) NOT NULL,
+        `receiverID` VARCHAR(100) DEFAULT NULL,
+        `chatID` VARCHAR(100) NOT NULL,
+        `message` text NOT NULL,
+        `messageType` enum ('text', 'image', 'video', 'file') DEFAULT 'text',
+        `timestamp` datetime DEFAULT CURRENT_TIMESTAMP(),
+        `isRead` tinyint (1) DEFAULT 0,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `messageID` (`messageID`),
+        KEY `senderID` (`senderID`),
+        KEY `idx_chat_messages_chatid_timestamp` (`chatID`, `timestamp`),
+        KEY `idx_chatID_timestamp` (`chatID`, `timestamp`),
+        CONSTRAINT `db_chat_messages_ibfk_1` FOREIGN KEY (`senderID`) REFERENCES `db_users` (`userID`)
+);
 
-CREATE TABLE `purchases` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `purchaseId` VARCHAR(100) NOT NULL UNIQUE,
-  `userId` VARCHAR(100) NOT NULL,
-  `coinCount` INT NOT NULL,
-  `amountPaid` DECIMAL(10,2) NOT NULL,
-  `paymentId` VARCHAR(100),
-  `status` VARCHAR(20) DEFAULT 'pending',
-  `purchasedAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE
+    `db_chats` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `chatID` VARCHAR(100) NOT NULL,
+        `chatType` enum ('private', 'broadcast', 'group') NOT NULL,
+        `chatName` VARCHAR(255) DEFAULT NULL,
+        `chatWith` VARCHAR(100) DEFAULT NULL,
+        `createdBy` VARCHAR(100) DEFAULT NULL,
+        `createdAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `chatID` (`chatID`),
+        KEY `idx_chat_createdAt` (`chatID`, `createdAt`),
+        KEY `idx_chatID_createdAt` (`chatID`, `createdAt`),
+        KEY `idx_createdBy_chatWith` (`createdBy`, `chatWith`)
+    );
 
-  FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`),
-  FOREIGN KEY (`paymentId`) REFERENCES `payments` (`paymentId`)
+CREATE TABLE
+    `db_chat_members` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `chatID` VARCHAR(100) DEFAULT NULL,
+        `userID` VARCHAR(100) DEFAULT NULL,
+        `joinedAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        KEY `userID` (`userID`),
+        KEY `chatID` (`chatID`),
+        CONSTRAINT `db_chat_members_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`),
+        CONSTRAINT `db_chat_members_ibfk_2` FOREIGN KEY (`chatID`) REFERENCES `db_chats` (`chatID`)
 );

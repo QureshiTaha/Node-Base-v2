@@ -18,7 +18,7 @@ module.exports = () => {
     try {
       const [countResult] = await sqlQuery(
         `
-        SELECT COUNT(*) AS count FROM followers WHERE followTo = ?
+        SELECT COUNT(*) AS count FROM db_followers WHERE followTo = ?
       `,
         [userID]
       );
@@ -37,7 +37,7 @@ module.exports = () => {
         `
         SELECT 
           u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic, u.userGender
-        FROM followers f
+        FROM db_followers f
         JOIN db_users u ON f.followBy = u.userID
         WHERE f.followTo = ?
         ORDER BY f.followAt DESC

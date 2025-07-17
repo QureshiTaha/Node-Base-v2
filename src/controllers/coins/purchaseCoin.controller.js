@@ -8,6 +8,7 @@ module.exports = () => {
     if (!userID || !count) {
       return res.status(400).json({ status: false, msg: 'userID and count are required' });
     }
+
     if (isNaN(count) || count <= 0) {
       return res.status(400).json({ status: false, msg: 'Count must be a positive number' });
     }
@@ -22,7 +23,6 @@ module.exports = () => {
         return res.status(404).json({ status: false, msg: 'User not found or deleted' });
       }
 
-      // Get available coins from db_coin_store table
       const coinsResult = await sqlQuery(
         `SELECT coinStoreId FROM db_coin_store WHERE ownerId IS NULL LIMIT ? FOR UPDATE`,
         [parseInt(count)]
@@ -46,10 +46,14 @@ module.exports = () => {
       const coinStoreIds = coinsResult.map(c => c.coinStoreId);
       const placeholders = coinStoreIds.map(() => '?').join(',');
 
-      // Start full transaction
+      const paymentId = uuidv4();
+      const transactionId = uuidv4();
+      const paymentMethod = 'internal';
+      const status = 'completed';
+      const amount = parseFloat((count * 1).toFixed(2)); 
+
       await sqlQuery('START TRANSACTION');
 
-      // Update coin ownership
       await sqlQuery(
         `UPDATE db_coin_store 
          SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
@@ -57,32 +61,38 @@ module.exports = () => {
         [userID, purchaseId, ...coinStoreIds]
       );
 
-      // Prepare bulk insert into db_coin_transaction
+      const coinTransactionId = uuidv4();
+      const senderId = 'Purchased from Store';
+
       const insertValues = [];
       const insertParams = [];
-      const senderId = "Purchased from Store"; // Use a fixed sender ID for store purchases
-      const coinTransactionId = uuidv4();
 
       for (const coin of coinsResult) {
         insertValues.push('(?, ?, ?, ?, NOW())');
         insertParams.push(coinTransactionId, coin.coinStoreId, senderId, userID);
       }
 
-      const insertQuery = `
-        INSERT INTO db_coin_transaction 
+      await sqlQuery(
+        `INSERT INTO db_coin_transaction 
         (coinTransactionId, coinId, senderId, receiverId, transactionDate)
-        VALUES ${insertValues.join(', ')}
-      `;
+        VALUES ${insertValues.join(', ')}`,
+        insertParams
+      );
 
-      await sqlQuery(insertQuery, insertParams);
+      await sqlQuery(
+        `INSERT INTO db_payments 
+        (paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [paymentId, userID, amount, count, paymentMethod, status, transactionId]
+      );
 
-      // Commit full transaction
       await sqlQuery('COMMIT');
 
       return res.status(200).json({
         status: true,
-        msg: `${coinsResult.length} coin(s) purchased successfully`,
+        msg: `${count} coin(s) purchased successfully`,
         purchaseId,
+        paymentId,
         coinIds: coinStoreIds
       });
 

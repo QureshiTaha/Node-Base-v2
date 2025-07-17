@@ -16,6 +16,9 @@ const {
   forgotPasswordController,
   verifyOtpController,
   resetPasswordController,
+  googleCallbackController,
+  googleApiAuthController,
+  googleAuthController
 } = userController();
 
 const { testingController } = testController();
@@ -37,5 +40,10 @@ router.route('/by-userID/:userID').get(getUserByUserIdController);
 router.route('/forgot-password').post(forgotPasswordController);
 router.route('/verify-otp').post(verifyOtpController);
 router.route('/reset-password').post(resetPasswordController);
+router.route('/google-callback').get(googleCallbackController);
+router.route('/auth/google').get(googleAuthController);
+router.route('/google-login').post(googleApiAuthController); //api/auth/google
+
+
 
 module.exports = router;

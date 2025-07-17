@@ -11,6 +11,10 @@ const getUserByUserIdController = require('./getUserByUserId.controller');
 const forgotPasswordController = require('./forgotPassword.controller');
 const verifyOtpController = require('./verifyOtp.controller');
 const resetPasswordController = require('./resetPassword.controller');
+const googleCallbackController = require('./googleCallback.controller');
+const googleApiAuthController = require('./googleApiAuth.controller.js');
+const googleAuthController = require('./googleAuth.controller.js');
+
 
 module.exports = (dependencies) => {
   return {
@@ -26,6 +30,9 @@ module.exports = (dependencies) => {
     getUserByUserIdController: getUserByUserIdController(dependencies),
     forgotPasswordController: forgotPasswordController(dependencies),
     verifyOtpController: verifyOtpController(dependencies),
-    resetPasswordController: resetPasswordController(dependencies)
+    resetPasswordController: resetPasswordController(dependencies),
+    googleCallbackController: googleCallbackController(dependencies),
+    googleApiAuthController: googleApiAuthController(dependencies),
+    googleAuthController: googleAuthController(dependencies),
   };
 };

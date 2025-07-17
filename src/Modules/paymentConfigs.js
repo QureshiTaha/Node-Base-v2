@@ -20,15 +20,20 @@ function decryptString(base64Data, key) {
 }
 
 module.exports = {
-//   MERCHANT_ID: 'IPCOS00024THA', // For UAT
-//   ENCRYPTION_KEY: '8b3a40g766d94345b9d82ad02cfb1df1', // For UAT
-  MERCHANT_ID: 'SLCOS00092BHO',
-  ENCRYPTION_KEY: '7dncmvnb4rx93llu5y1ilm5k397wfevu',
-//   PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/paymentrequest/seamless',
-//   PAYMENT_BASE_URL: 'https://pg.icepe.in/paymentrequest', // For Web
-//   PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/uat/payin/paymentrequest', // For Web
-  PAYMENT_BASE_URL: 'https://pg.icepe.in/paymentrequest/seamless',
-  CALLBACK_URL: 'https://yourdomain.com/callback.php', // Update to your domain
+  //   MERCHANT_ID: 'IPCOS00024THA', // For UAT
+  //   ENCRYPTION_KEY: '8b3a40g766d94345b9d82ad02cfb1df1', // For UAT
+  MERCHANT_ID: 'UATCOS00096BHO',
+  // ENCRYPTION_KEY: '7dncmvnb4rx93llu5y1ilm5k397wfevu', //OLD
+  ENCRYPTION_KEY: 'ulh1yx9kazhdsnnt2nmi9ydafwh744ks',
+  //   PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/paymentrequest/seamless',
+  // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/uat/payin/paymentrequest', // For Web
+
+  // PAYMENT_BASE_URL: 'https://pg.icepe.in/paymentrequest', // For Web
+  // PAYMENT_BASE_URL: 'https://pg.icepe.in/paymentrequest/seamless',
+
+  // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/UATIntegration/uat/payin/paymentrequest', //for web
+  PAYMENT_BASE_URL: 'https://uat.godemo.in/api/UATIntegration/paymentrequest/seamless',
+  CALLBACK_URL: 'https://api-dating-app.iceweb.in/api/v1/payment/callback', // Update to your domain
   encryptString,
   decryptString
 };

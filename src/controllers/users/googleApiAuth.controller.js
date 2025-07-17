@@ -58,19 +58,22 @@ const insertNewUser = async (payload, imagePath) => {
     const userPassword = utils.passwordGenerator();
     const userHashedPassword = await hashPassword(userPassword);
     const userEmail = payload.email;
-    const userFirstName = payload.given_name;
-    const userSurname = payload.family_name;
+    const userFirstName = payload.given_name || '';
+    const userSurname = payload.family_name || '';
+    const userID = uuidv4();
 
     const query = `
-        INSERT INTO db_users (userEmail, userFirstName, userSurname, profilePic, userPassword)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO db_users (userID,userEmail, userFirstName, userSurname, profilePic, userPassword,userMeta)
+        VALUES (?, ?,?, ?, ?, ?, ?)
     `;
     const values = [
+        userID,
         payload.email,
-        payload.given_name,
-        payload.family_name,
+        userFirstName,
+        userSurname,
         imagePath,
-        userHashedPassword
+        userHashedPassword,
+        JSON.stringify({...payload, imagePath: imagePath})
     ];
 
     console.log("Sending Mail...");

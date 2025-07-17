@@ -1,7 +1,7 @@
 
 // ⚙️ Creds In future move to ENV
 const CLIENT_ID = '583864958599-g18apdb6lrnftdvk0olue7cdj909bngt.apps.googleusercontent.com';
-const CLIENT_SECRET = ''; // from Google Console
+const CLIENT_SECRET = process.env.GOOGLE_SECRET || ''; // from Google Console
 const REDIRECT_URI = 'http://localhost:3000/auth/google/callback'; // or your domain
 const DEEP_LINK_URI = 'myapp://login';
 

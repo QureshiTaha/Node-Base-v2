@@ -7,6 +7,7 @@ const logsController = require('./Logs');
 const coinsController = require('./coins');
 const followController = require('./follow');
 const chatController = require('./chats');
+const paymentController = require('./payment');
 
 module.exports = {
   testController,
@@ -18,4 +19,5 @@ module.exports = {
   coinsController,
   followController,
   chatController,
+  paymentController,
 };

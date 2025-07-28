@@ -11,14 +11,14 @@ const database = require('./Modules/config');
 const routes = require('./routes');
 var logger = require('morgan');
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json()); 
+app.use(bodyParser.json());
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
 const http = require('http');
 // var admin = require('firebase-admin');
 // var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
 const Mail = require('./Modules/email');
 const {initializeSocket} = require('./Modules/socketManager');
- 
+
 module.exports = {
   start: async () => {
     if (process.env.ACCESS_LOGGING === 'false') {
@@ -65,7 +65,7 @@ module.exports = {
 
     app.get('/reels/uploads/:filename', (req, res) => {
       const filePath = path.join(__dirname, '../uploads', req.params.filename);
-      
+
       fs.stat(filePath, (err, stats) => {
         if (err) return res.sendStatus(404);
 
@@ -81,19 +81,26 @@ module.exports = {
 
           const file = fs.createReadStream(filePath, { start, end });
 
+
           res.writeHead(206, {
             "Content-Range": `bytes ${start}-${end}/${fileSize}`,
             "Accept-Ranges": "bytes",
             "Content-Length": chunkSize,
             "Content-Type": contentType,
+            "Cache-Control": "public, max-age=31536000, immutable"
           });
+          console.log("here1");
+
 
           file.pipe(res);
         } else {
+          console.log("here2");
           // Fallback: send full file
           res.writeHead(200, {
+            "Accept-Ranges": "bytes",
             "Content-Length": fileSize,
             "Content-Type": contentType,
+            "Cache-Control": "public, max-age=31536000, immutable"
           });
 
           fs.createReadStream(filePath).pipe(res);

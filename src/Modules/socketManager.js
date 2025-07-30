@@ -143,7 +143,7 @@ const initializeSocket = (server) => {
 
     socket.on('start-call', (data) => {
       const { to, from, chatID, userName } = data;
-      console.log(`🚨🎬 ${data}`);
+      console.log(`🚨🎬 data`,data);
 
       const recipientSocketId = onlineUsers[to];
       activeCalls[from] = to;

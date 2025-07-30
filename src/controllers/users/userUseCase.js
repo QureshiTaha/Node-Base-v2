@@ -129,18 +129,42 @@ module.exports = {
       return error;
     }
   },
-  getAllUsers: async function (search = '') {
-    try {
-      const userList = await sqlQuery(
-        `SELECT * from db_users where CONCAT( userFirstName,' ', userSurname ) LIKE '%${search}%' or userEmail like '%${search}%'
-        or userPhone like '%${search}%' AND (userDeleted IS NULL OR userDeleted != 1)`
-      );
-      if (userList) return userList;
-      return null;
-    } catch (error) {
-      return error;
-    }
-  },
+getAllUsers: async function (search = "", limit = 10, offset = 0) {
+  try {
+    const searchQuery = `%${search}%`;
+
+    // Get users with LIMIT & OFFSET
+    const userList = await sqlQuery(
+      `SELECT * 
+       FROM db_users 
+       WHERE (CONCAT(userFirstName, ' ', userSurname) LIKE ? 
+              OR userEmail LIKE ? 
+              OR userPhone LIKE ?)
+       AND (userDeleted IS NULL OR userDeleted != 1)
+       LIMIT ? OFFSET ?`,
+      [searchQuery, searchQuery, searchQuery, limit, offset]
+    );
+
+    // Get total count
+    const totalCountResult = await sqlQuery(
+      `SELECT COUNT(*) as totalCount 
+       FROM db_users 
+       WHERE (CONCAT(userFirstName, ' ', userSurname) LIKE ? 
+              OR userEmail LIKE ? 
+              OR userPhone LIKE ?)
+       AND (userDeleted IS NULL OR userDeleted != 1)`,
+      [searchQuery, searchQuery, searchQuery]
+    );
+
+    const totalCount = totalCountResult[0]?.totalCount || 0;
+
+    return { users: userList, totalCount };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+,
   checkIfExist: async function (userID) {
     try {
       const query = `SELECT count(1) as count FROM db_users WHERE userID =  ? AND (userDeleted IS NULL OR userDeleted != 1)`;

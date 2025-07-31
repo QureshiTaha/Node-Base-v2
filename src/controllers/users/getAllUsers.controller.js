@@ -8,20 +8,16 @@ module.exports = (dependencies) => {
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
 
-      // Fetch paginated users
       const { users, totalCount } = await userUseCase.getAllUsers(search, limit, offset);
 
-      const haveMore = offset + limit < totalCount;
+      let userDetails = users;
+      if (users.length > 0) {
+        userDetails[userDetails.length - 1].haveMore = totalCount > offset + limit;
+        userDetails[userDetails.length - 1].totalCount = totalCount;
+      }
 
-      res.status(200).json({
-        status: true,
-        msg: "success",
-        data: {
-          users,
-          totalCount,
-          haveMore,
-        },
-      });
+      res.send({ status: true, msg: 'success', data: userDetails, totalCount: totalCount, haveMore: totalCount > offset + limit });
+
     } catch (error) {
       console.error(error);
       res.status(400).json({ message: "No users found" });

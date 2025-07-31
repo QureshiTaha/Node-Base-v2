@@ -138,12 +138,21 @@ const initializeSocket = (server) => {
       }
     });
 
+    // HAndle Online Status
+    socket.on('check-online', (data) => {
+      // Check in list
+      const { userID, checkerUserID } = data;
+      console.log("Checking Online Status", data);
 
+      const onlineStatus = onlineUsers[userID] ? 1 : 0;
+      console.log(onlineUsers, onlineUsers[checkerUserID]);
+
+      io.to(onlineUsers[checkerUserID]).emit('status-received', { userID, checkerUserID, onlineStatus });
+    })
     // Video Call Modules..
-
     socket.on('start-call', (data) => {
       const { to, from, chatID, userName } = data;
-      console.log(`🚨🎬 data`,data);
+      console.log(`🚨🎬 data`, data);
 
       const recipientSocketId = onlineUsers[to];
       activeCalls[from] = to;

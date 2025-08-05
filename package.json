@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node index",
-    "server": "nodemon index.js"
+    "serveLocal": "nodemon index.js",
+    "server": "nodemon index.js --ignore node_modules --ignore logs --ignore uploads --ignore .git"
+  },
+  "pm2": {
+    "watch": true,
+    "ignore_watch": ["node_modules", "logs", "uploads", ".git"]
   },
   "author": "Taha Qureshi",
   "license": "ISC",

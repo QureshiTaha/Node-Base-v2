@@ -26,9 +26,15 @@ const initializeSocket = (server) => {
       console.log(`🧲 Socket ${socket.id} joined room: ${chatID}`);
     });
 
-    socket.on('setOnline', ({ userID }) => {
+    socket.on('set-online', ({ userID }) => {
+      if (!userID) return;
       socket.join(`user_${userID}`);
       onlineUsers[userID] = socket.id;
+      // notify all online users
+
+      onlineUsers && Object.entries(onlineUsers).forEach(([key, value]) => {
+        io.to(value).emit('userOnline', { userID, checkerUserID: key, onlineStatus: 1 });
+      })
       console.log(`🧲🧲🧲 Socket ${socket.id} is Online with-userID ${userID}`);
     });
 
@@ -261,6 +267,8 @@ const initializeSocket = (server) => {
 
     socket.on('disconnect', () => {
       console.log('Socket disconnected:', socket.id);
+      const userID = Object.entries(onlineUsers).find(([key, value]) => value === socket.id)?.[0] || null;
+      Object.entries(onlineUsers).forEach(([key, value]) => io.to(value).emit('status-received', { userID, checkerUserID: key, onlineStatus: 0 }));
 
       // End all active calls for this user
       for (const [caller, data] of Object.entries(activeCalls)) {

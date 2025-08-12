@@ -9,9 +9,10 @@ const utils = require('../../Modules/utils');
 const Mail = require('../../Modules/email');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 // ⚙️ Creds In future move to ENV
-const CLIENT_ID = '583864958599-g18apdb6lrnftdvk0olue7cdj909bngt.apps.googleusercontent.com';
+const CLIENT_ID = '715055673513-j69r1emipult6kbovbv0t2da7ots0i03.apps.googleusercontent.com';
 const client = new OAuth2Client(CLIENT_ID);
 
 // Function to save user image from URL to disk
@@ -73,14 +74,14 @@ const insertNewUser = async (payload, imagePath) => {
         userSurname,
         imagePath,
         userHashedPassword,
-        JSON.stringify({...payload, imagePath: imagePath})
+        JSON.stringify({ ...payload, imagePath: imagePath })
     ];
 
     console.log("Sending Mail...");
     await Mail.send({
         userEmail: userEmail,
-        subject: 'Welcome to Dating App! 🎉',
-        body: 'Hello ' + userFirstName + ' ' + userSurname + ',<br><br>Welcome to Dating App! 🎉<br><br>You can now log in to your account using the following credentials:<br><br>Email: <strong>' + userEmail + '</strong><br>Password: <strong>' + userPassword + '</strong>',
+        subject: 'Welcome to Blush! 🎉',
+        body: 'Hello ' + userFirstName + ' ' + userSurname + ',<br><br>Welcome to Blush! 🎉<br><br>You can now log in to your account using the following credentials:<br><br>Email: <strong>' + userEmail + '</strong><br>Password: <strong>' + userPassword + '</strong>',
         mailerType: 1
     });
     console.log('User Created with Creds :', userEmail, userPassword);
@@ -122,12 +123,36 @@ module.exports = (dependencies) => {
                 await insertNewUser(payload, savedImage);
             }
 
+            let NewUser = await userUseCase.getUserByUserEmail(payload.email);
+            if (NewUser.length) {
+                NewUser = NewUser[0];
+            }
             // Respond with user data
+            let userData = { ...NewUser, googleID: payload.sub }
+            const accessToken = jwt.sign({ id: NewUser.userID }, process.env.JWT_SECRET, {
+                expiresIn: process.env.JWT_EXPIRES_IN
+            });
+            console.log('accessToken', accessToken);
+
+            // Generate Refresh Token
+            const refreshToken = jwt.sign({ id: NewUser.userID }, process.env.JWT_REFRESH_SECRET, {
+                expiresIn: process.env.JWT_REFRESH_EXPIRES_IN
+            });
+            console.log('refreshToken', refreshToken);
+
+            // Store tokens in db_sessions
+            await sqlQuery(`
+                    INSERT INTO db_sessions (userID, refreshToken, accessToken) 
+                    VALUES ('${NewUser.userID}', '${refreshToken}', '${accessToken}')
+                    ON DUPLICATE KEY UPDATE refreshToken = '${refreshToken}', accessToken = '${accessToken}'
+                  `);
+
+            userData.userPassword = '******';
+
             res.json({
-                name: payload.name,
-                email: payload.email,
-                picture: payload.picture,
-                googleID: payload.sub,
+                status: true,
+                msg: 'success',
+                data: { userData, accessToken, refreshToken },
             });
         } catch (err) {
             console.error("Authentication Error:", err);

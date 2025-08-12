@@ -39,9 +39,9 @@ module.exports = {
       }
 
       const mailOptions = {
-        from: mailerType == 1 ? 'noreply@Task Manager <lincpaysolution+noreply@gmail.com>' : 'noreply@Task Manager <taskmanagement@iceweb.in>',
+        from: mailerType == 1 ? 'noreply@Blush <lincpaysolution+noreply@gmail.com>' : 'noreply@Blush <taskmanagement@iceweb.in>',
         to: receiverEmail.toString().trim(),
-        subject: subject || '📩 Message from Task Manager',
+        subject: subject || '📩 Message from Blush',
         headers: {
           'List-Unsubscribe': '<mailto:unsubscribe@iceweb.in>, <https://iceweb.in/unsubscribe>'
         },
@@ -50,7 +50,7 @@ module.exports = {
             <table width="100%" style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
               <tr>
                 <td style="background: #0d6efd; padding: 20px; color: white; text-align: center;">
-                  <h1 style="margin: 0; font-size: 24px;">Dating Application Notification</h1>
+                  <h1 style="margin: 0; font-size: 24px;">Welcome To Blush</h1>
                 </td>
               </tr>
               <tr>
@@ -63,7 +63,7 @@ module.exports = {
               </tr>
               <tr>
                 <td style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #999;">
-                  &copy; ${new Date().getFullYear()} Task Manager by lincpay.in. All rights reserved.
+                  &copy; ${new Date().getFullYear()} Blush by iceweb.in. All rights reserved.
                 </td>
               </tr>
             </table>

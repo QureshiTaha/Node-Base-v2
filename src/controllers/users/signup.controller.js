@@ -72,8 +72,8 @@ module.exports = (dependencies) => {
           console.log("Sending Mail...");
           await Mail.send({
             userEmail: userEmail,
-            subject: 'Welcome to Task Manager! 🎉',
-            body: 'Hello ' + userFirstName + ' ' + userSurname + ',<br><br>Welcome to Task Manager! 🎉<br><br>You can now log in to your account using the following credentials:<br><br>Email: <strong>' + userEmail + '</strong><br>Password: <strong>' + userPassword + '</strong>',
+            subject: 'Welcome to Blush! 🎉',
+            body: 'Hello ' + userFirstName + ' ' + userSurname + ',<br><br>Welcome to Blush! 🎉<br><br>You can now log in to your account using the following credentials:<br><br>Email: <strong>' + userEmail + '</strong><br>Password: <strong>' + userPassword + '</strong>',
             mailerType: 1
           });
           console.log('User Created with Creds :', userEmail, userPassword);

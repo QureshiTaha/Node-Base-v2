@@ -89,12 +89,8 @@ module.exports = {
             "Content-Type": contentType,
             "Cache-Control": "public, max-age=31536000, immutable"
           });
-          console.log("here1");
-
-
           file.pipe(res);
         } else {
-          console.log("here2");
           // Fallback: send full file
           res.writeHead(200, {
             "Accept-Ranges": "bytes",

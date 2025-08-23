@@ -42,7 +42,7 @@ module.exports = () => {
         });
       }
 
-      const purchaseId = uuidv4();
+      const payTranId = uuidv4();
       const coinStoreIds = coinsResult.map(c => c.coinStoreId);
       const placeholders = coinStoreIds.map(() => '?').join(',');
 
@@ -56,31 +56,32 @@ module.exports = () => {
 
       await sqlQuery(
         `UPDATE db_coin_store 
-         SET ownerId = ?, purchaseId = ?, purchasedAt = NOW() 
+         SET ownerId = ?, transactionId = ?, purchasedAt = NOW() 
          WHERE coinStoreId IN (${placeholders})`,
-        [userID, purchaseId, ...coinStoreIds]
+        [userID, payTranId, ...coinStoreIds]
       );
 
       const coinTransactionId = uuidv4();
       const senderId = 'Purchased from Store';
+      const orderNo = 'ORD-' + Date.now(); 
 
       const insertValues = [];
       const insertParams = [];
 
       for (const coin of coinsResult) {
-        insertValues.push('(?, ?, ?, ?, NOW())');
-        insertParams.push(coinTransactionId, coin.coinStoreId, senderId, userID);
+        insertValues.push('(?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)');
+        insertParams.push(coinTransactionId,orderNo,'success', coin.coinStoreId, senderId, userID,1,amount,null);
       }
 
-      await sqlQuery(
-        `INSERT INTO db_coin_transaction 
-        (coinTransactionId, coinId, senderId, receiverId, transactionDate)
-        VALUES ${insertValues.join(', ')}`,
-        insertParams
-      );
+      await sqlQuery(`
+        INSERT INTO db_coin_transaction
+        (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+      `, [uuidv4(), orderNo, 'processing', senderId, userID, count, amount, JSON.stringify({})]);
+
 
       await sqlQuery(
-        `INSERT INTO db_payments 
+        `INSERT INTO db_coin_payments 
         (paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [paymentId, userID, amount, count, paymentMethod, status, transactionId]
@@ -91,7 +92,7 @@ module.exports = () => {
       return res.status(200).json({
         status: true,
         msg: `${count} coin(s) purchased successfully`,
-        purchaseId,
+        transactionId,
         paymentId,
         coinIds: coinStoreIds
       });

@@ -6,7 +6,7 @@ CREATE TABLE
         `userSurname` VARCHAR(100) NOT NULL,
         `userEmail` VARCHAR(50) NOT NULL,
         `userPassword` VARCHAR(255) NOT NULL,
-       `userPhone` VARCHAR(11) DEFAULT NULL,
+        `userPhone` VARCHAR(11) DEFAULT NULL,
         `userAddressLine1` VARCHAR(255) NOT NULL,
         `userAddressLine2` VARCHAR(255) NOT NULL,
         `userAddressPostcode` VARCHAR(255) NOT NULL,
@@ -201,7 +201,7 @@ CREATE TABLE
         `id` INT(11) NOT NULL AUTO_INCREMENT,
         `coinStoreId` VARCHAR(100) NOT NULL,
         `ownerId` VARCHAR(100) NULL,
-        `purchaseId` VARCHAR(100) NULL,
+        `transactionId` VARCHAR(100) NULL,
         `purchasedAt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id)
     );
@@ -209,12 +209,18 @@ CREATE TABLE
 CREATE TABLE `db_coin_transaction` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `coinTransactionId` CHAR(36) NOT NULL,
+    `orderNo` VARCHAR(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+    `status` ENUM('processing', 'cancelled', 'failed', 'success') NOT NULL DEFAULT 'processing',
     `coinId` CHAR(36) NOT NULL,
     `senderId` VARCHAR(255) NOT NULL,
     `receiverId` VARCHAR(255) NOT NULL,
+    `coinCount` INT(11) NOT NULL,
+    `amount` FLOAT NOT NULL,
     `transactionDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+    `metaData` LONGTEXT,
+    PRIMARY KEY (`id`)
 );
+
 
 
 CREATE TABLE db_followers (
@@ -247,7 +253,7 @@ CREATE TABLE db_otp_verification (
   FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE
 );
 
-CREATE TABLE `db_payments` (
+CREATE TABLE `db_coin_payments` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `paymentId` VARCHAR(100) NOT NULL UNIQUE,
   `userId` VARCHAR(100) NOT NULL,

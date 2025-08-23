@@ -25,7 +25,7 @@ module.exports = () => {
 
       const result = await sqlQuery(
         `
-        SELECT cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt
+        SELECT cs.id, cs.coinStoreId, cs.ownerId, cs.transactionId, cs.purchasedAt
         FROM db_coin_store cs
         WHERE cs.ownerId IS NULL
         ORDER BY cs.purchasedAt DESC

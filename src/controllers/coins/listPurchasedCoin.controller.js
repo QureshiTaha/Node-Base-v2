@@ -26,7 +26,7 @@ module.exports = () => {
 
       const coins = await sqlQuery(`
         SELECT 
-          cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt,
+          cs.id, cs.coinStoreId, cs.ownerId, cs.transactionId, cs.purchasedAt,
           u.userFirstName, u.userSurname, u.userPhone
         FROM db_coin_store cs
         JOIN db_users u ON cs.ownerId = u.userID

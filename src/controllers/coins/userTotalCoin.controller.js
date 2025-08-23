@@ -41,7 +41,7 @@ module.exports = () => {
       // Fetch paginated coins
       const coins = await sqlQuery(
         `SELECT 
-           id, coinStoreId, purchaseId, purchasedAt
+           id, coinStoreId, transactionId, purchasedAt
          FROM db_coin_store
          WHERE ownerId = ?
          ORDER BY purchasedAt DESC
@@ -66,7 +66,8 @@ module.exports = () => {
           surname: userInfo.userSurname,
           phone: userInfo.userPhone,
         },
-        data: coins
+        totalCoins: userInfo.totalCoins ,
+
       });
 
     } catch (error) {

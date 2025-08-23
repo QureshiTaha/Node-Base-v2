@@ -12,6 +12,7 @@ const deleteOfferController = require('./deleteOffer.controller');
 const getAllOffersController = require('./getAllOffers.controller');
 const getOfferByIdController = require('./getOfferById.controller');
 const userTransactionController = require('./userTransactionHistory.controller');
+const getUserCoinTransactionController = require('./getUserCoinTransaction.controller');
 
 module.exports = (dependencies) => {
   return {
@@ -29,6 +30,7 @@ module.exports = (dependencies) => {
     getAllOffersController: getAllOffersController(dependencies),
     getOfferByIdController: getOfferByIdController(dependencies),
     userTransactionController: userTransactionController(dependencies),
+    getUserCoinTransactionController: getUserCoinTransactionController(dependencies),
   };
 };
 

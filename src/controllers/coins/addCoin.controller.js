@@ -25,8 +25,8 @@ module.exports = () => {
 
     try {
       const batchInsert = async (count) => {
-        const batchSize = 100;
-        const concurrencyLimit = 5;
+        const batchSize = 1000;
+        // const concurrencyLimit = 5;
         const batches = [];
 
         // Create batches with multiple rows
@@ -47,23 +47,9 @@ module.exports = () => {
           await sqlQuery(insertQuery);
         };
 
-        const executeBatchesConcurrently = async () => {
-          const results = [];
-          const runningBatches = [];
-
-          for (let i = 0; i < batches.length; i++) {
-            if (runningBatches.length >= concurrencyLimit) {
-              const completedBatch = await Promise.race(runningBatches);
-              runningBatches.splice(runningBatches.indexOf(completedBatch), 1);
-            }
-            const batchPromise = runBatchInsert(batches[i]);
-            runningBatches.push(batchPromise);
-            results.push(batchPromise);
-          }
-          await Promise.all(results);
-        };
-
-        await executeBatchesConcurrently();
+        for (const batch of batches) {
+          await runBatchInsert(batch);
+        }
       };
 
       await batchInsert(count);

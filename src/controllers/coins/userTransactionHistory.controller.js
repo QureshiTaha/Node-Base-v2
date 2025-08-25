@@ -46,6 +46,7 @@ module.exports = () => {
         LIMIT ? OFFSET ?
       `, [userID, userID, userID, limit, offset]);
 
+
       const totalCountResult = await sqlQuery(`
         SELECT (
           (SELECT COUNT(DISTINCT coinTransactionId) FROM db_coin_transaction WHERE senderId = ? OR receiverId = ?) +
@@ -58,11 +59,30 @@ module.exports = () => {
 
       return res.status(200).json({
         status: true,
-        data: unifiedTransactions.map(row => ({
-          ...row,
-          haveMore,
-          totalCount
-        }))
+        data: unifiedTransactions.map(row => {
+          let transactionType = "";
+          let transactionLabel = "";
+
+          if (row.senderId === userID) {
+            transactionType = "sent";
+            transactionLabel = `Sent to ${row.receiverFirstName}`;
+          } else if (row.receiverId === userID && row.senderId === "Store") {
+            transactionType = "received";
+            transactionLabel = "Coin(s) purchased from Store";
+          } else if (row.receiverId === userID) {
+            transactionType = "received";
+            transactionLabel = `Received from ${row.senderFirstName}`;
+          }
+
+          return {
+            ...row,
+            transactionType,
+            transactionLabel,
+            haveMore,
+            totalCount,
+          };
+        })
+
       });
 
     } catch (err) {
@@ -71,3 +91,4 @@ module.exports = () => {
     }
   }
 }
+

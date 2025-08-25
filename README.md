@@ -21,3 +21,7 @@
 - **Get Books**: `GET /api/v1/books/?search=<query>`
 - **Get Books by Id**: `GET /api/v1/books/<bookID>`
 - **Add Book**: `POST /api/v1/books/`
+
+
+## PROD Start Command for PM2
+```pm2 start npm --name "datingApp" -- run server```

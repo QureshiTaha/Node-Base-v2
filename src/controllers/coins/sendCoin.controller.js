@@ -44,11 +44,12 @@ module.exports = () => {
 
       const coinsToTransfer = await sqlQuery(
         `SELECT coinStoreId FROM db_coin_store 
-         WHERE ownerId = ? 
-         LIMIT ? 
-         FOR UPDATE`,
-        [senderId, numCount]
+        WHERE ownerId = ? 
+        LIMIT ${numCount} 
+        FOR UPDATE`,
+        [senderId]
       );
+
 
       if (coinsToTransfer.length < numCount) {
         await sqlQuery('ROLLBACK');
@@ -58,56 +59,28 @@ module.exports = () => {
         });
       }
 
+
       const coinIds = coinsToTransfer.map(c => c.coinStoreId);
-      const batchSize = 100; 
-      const concurrencyLimit = 5;
 
-      const processTransfers = async () => {
-        const batches = [];
-        for (let i = 0; i < coinIds.length; i += batchSize) {
-          batches.push(coinIds.slice(i, i + batchSize));
-        }
+      const transactionId = uuidv4();
+      const orderNo = uuidv4();
+      const status = 'success';
+      const amount = 0;
 
-        const processBatch = async (batch) => {
-          const transactionId = uuidv4();
-          
-          await sqlQuery(
-            `UPDATE db_coin_store 
-             SET ownerId = ? 
-             WHERE coinStoreId IN (?)`,
-            [receiverId, batch]
-          );
+      await sqlQuery(
+        `UPDATE db_coin_store 
+        SET ownerId = ?, transactionId = ?, purchasedAt = NOW()
+        WHERE coinStoreId IN (?)`,
+        [receiverId, transactionId, coinIds]
+      );
 
-          const transactionValues = batch.map(id => 
-            `('${transactionId}', '${id}', '${senderId}', '${receiverId}', NOW())`
-          ).join(',');
+      await sqlQuery(
+        `INSERT INTO db_coin_transaction 
+          (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
+          VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+        [transactionId, orderNo, status, senderId, receiverId, coinIds.length, amount, JSON.stringify({})]
+      );
 
-          await sqlQuery(
-            `INSERT INTO db_coin_transaction 
-             (coinTransactionId, coinId, senderId, receiverId, transactionDate)
-             VALUES ${transactionValues}`
-          );
-        };
-
-        const runningBatches = new Set();
-        const results = [];
-
-        for (const batch of batches) {
-          if (runningBatches.size >= concurrencyLimit) {
-            await Promise.race(runningBatches);
-          }
-
-          const batchPromise = processBatch(batch)
-            .finally(() => runningBatches.delete(batchPromise));
-          
-          runningBatches.add(batchPromise);
-          results.push(batchPromise);
-        }
-
-        await Promise.all(results);
-      };
-
-      await processTransfers();
       await sqlQuery('COMMIT');
       transactionStarted = false;
 

@@ -11,7 +11,8 @@ module.exports = (dependencies) => {
       return
     }
     try {
-      const reels = await sqlQuery(`SELECT * FROM db_reels WHERE userID = '${userID}' ORDER BY timeStamp DESC`);
+      const reels = await sqlQuery(`SELECT db_reels.*,db_users.profilePic,CONCAT(db_users.userFirstName," ",db_users.userSurname) as userName FROM db_reels   
+          JOIN db_users on db_users.userID = db_reels.userID WHERE db_users.userID = '${userID}' ORDER BY timeStamp DESC`);
       console.log("userID=>", userID);
       res.status(200).json({
         status: true,

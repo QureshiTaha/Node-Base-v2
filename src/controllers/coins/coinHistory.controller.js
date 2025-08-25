@@ -14,7 +14,7 @@ module.exports = () => {
     try {
       const [coin] = await sqlQuery(
         `
-        SELECT  cs.id, cs.coinStoreId, cs.ownerId, cs.purchaseId, cs.purchasedAt,
+        SELECT  cs.id, cs.coinStoreId, cs.ownerId, cs.transactionId, cs.purchasedAt,
           CASE WHEN cs.ownerId IS NULL THEN TRUE ELSE FALSE END AS isAvailable,
           u.userFirstName, u.userSurname, u.userPhone
         FROM db_coin_store cs

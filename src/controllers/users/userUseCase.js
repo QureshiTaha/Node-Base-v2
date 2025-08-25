@@ -111,13 +111,33 @@ module.exports = {
       return error;
     }
   },
-  getUserByUserEmail: async function (userEmail) {
+ getUserByUserEmail: async function (userEmail) {
     try {
-      const driverOrderList = await sqlQuery(`SELECT * from db_users WHERE userEmail='${userEmail}'`);
-      if (driverOrderList) return driverOrderList;
-      return null;
+      const result = await sqlQuery(
+        `SELECT * FROM db_users WHERE userEmail = ? AND userDeleted IS NULL LIMIT 1`,
+        [userEmail]
+      );
+
+      if (!result || result.length === 0) {
+        return {
+          status: false,
+          message: "User not found",
+        };
+      }
+
+      const { userPassword, ...safeUser } = result[0];
+
+      return {
+        status: true,
+        data: safeUser,
+      };
+
     } catch (error) {
-      return error;
+      return {
+        status: false,
+        message: "Database error",
+        error: error.message,
+      };
     }
   },
   getUserByUserPhone: async function (userPhone) {

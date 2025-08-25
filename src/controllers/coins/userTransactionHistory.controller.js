@@ -38,7 +38,7 @@ module.exports = () => {
             IFNULL(u.userSurname, '') AS receiverSurname,
             p.createdAt AS transactionDate,
             p.coinCount
-          FROM db_payments p
+          FROM db_coin_payments p
           LEFT JOIN db_users u ON p.userId = u.userID
           WHERE p.userId = ?
         ) AS combined
@@ -46,10 +46,11 @@ module.exports = () => {
         LIMIT ? OFFSET ?
       `, [userID, userID, userID, limit, offset]);
 
+
       const totalCountResult = await sqlQuery(`
         SELECT (
           (SELECT COUNT(DISTINCT coinTransactionId) FROM db_coin_transaction WHERE senderId = ? OR receiverId = ?) +
-          (SELECT COUNT(*) FROM db_payments WHERE userId = ?)
+          (SELECT COUNT(*) FROM db_coin_payments WHERE userId = ?)
         ) AS totalCount
       `, [userID, userID, userID]);
 
@@ -58,11 +59,30 @@ module.exports = () => {
 
       return res.status(200).json({
         status: true,
-        data: unifiedTransactions.map(row => ({
-          ...row,
-          haveMore,
-          totalCount
-        }))
+        data: unifiedTransactions.map(row => {
+          let transactionType = "";
+          let transactionLabel = "";
+
+          if (row.senderId === userID) {
+            transactionType = "sent";
+            transactionLabel = `Sent to ${row.receiverFirstName}`;
+          } else if (row.receiverId === userID && row.senderId === "Store") {
+            transactionType = "received";
+            transactionLabel = "Coin(s) purchased from Store";
+          } else if (row.receiverId === userID) {
+            transactionType = "received";
+            transactionLabel = `Received from ${row.senderFirstName}`;
+          }
+
+          return {
+            ...row,
+            transactionType,
+            transactionLabel,
+            haveMore,
+            totalCount,
+          };
+        })
+
       });
 
     } catch (err) {
@@ -71,3 +91,4 @@ module.exports = () => {
     }
   }
 }
+

@@ -8,7 +8,7 @@ const {
 
 const router = express.Router();
 
-router.route('/initiate').get(paymentInitiate);
-router.route('/callback').get(callBackHandler);
+router.route('/initiate').post(paymentInitiate);
+router.route('/callback').post(callBackHandler);
 
 module.exports = router;

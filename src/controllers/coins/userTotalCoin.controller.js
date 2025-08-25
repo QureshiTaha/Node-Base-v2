@@ -34,14 +34,13 @@ module.exports = () => {
       if (!userInfo) {
         return res.status(404).json({
           status: false,
-          msg: 'User not found or has no coins'
+          msg: 'User not found'
         });
       }
 
-      // Fetch paginated coins
       const coins = await sqlQuery(
         `SELECT 
-           id, coinStoreId, purchaseId, purchasedAt
+           id, coinStoreId, transactionId, purchasedAt
          FROM db_coin_store
          WHERE ownerId = ?
          ORDER BY purchasedAt DESC
@@ -50,12 +49,8 @@ module.exports = () => {
       );
 
       const totalCount = userInfo.totalCoins;
-      const haveMore = totalCount > _page * _limit;
-
-      if (coins.length > 0) {
-        coins[coins.length - 1].haveMore = haveMore;
-        coins[coins.length - 1].totalCount = totalCount;
-      }
+      const totalPages = Math.ceil(totalCount / _limit);
+      const haveMore = _page < totalPages;
 
       return res.status(200).json({
         status: true,
@@ -66,7 +61,15 @@ module.exports = () => {
           surname: userInfo.userSurname,
           phone: userInfo.userPhone,
         },
-        data: coins
+        totalCoins: userInfo.totalCoins,
+        coins,
+        pagination: {
+          page: _page,
+          limit: _limit,
+          totalCount,
+          totalPages,
+          haveMore
+        }
       });
 
     } catch (error) {

@@ -1,94 +1,109 @@
 const { v4: uuidv4 } = require('uuid');
-
-
 const {
     encryptString, decryptString, MERCHANT_ID,
     ENCRYPTION_KEY, PAYMENT_BASE_URL, CALLBACK_URL
 } = require('../../Modules/paymentConfigs');
-
+const { getUserByUserEmail } = require('../users/userUseCase');
+const { getOfferByOfferId, getAvailableCoins, purchaseCoins } = require('../coins/coinUseCase');
+const { myConsole } = require('../../utils/myConsole');
 
 module.exports = (dependencies) => {
     return async (req, res) => {
-        const order_id = 'ORD' + Date.now().toString().toUpperCase();
-        const amount = '1.00';
-        const orderNo = order_id.slice(0, 35);
-        const billing_phone = '9876543210';
-        const billing_name = 'Kalpana';
-        const latitude = '28.7041';
-        const longitude = '77.1025';
-        const txnReqType = 'Slupi';
+        try {
+            // Validate required fields from request body
+            const { emailId, userID, offerId } = req.body;
 
-        const paymentRequest = {
-            "mid": "UATCOS00096BHO",
-            "enckey": "ulh1yx9kazhdsnnt2nmi9ydafwh744ks",
-            "orderNo": order_id,
-            "amount": "1.00",
-            "currency": "INR",
-            "txnReqType": "Slupi",
-            "emailId": "ns200drift@gmail.com",
-            "dateOfReg": "2025-06-30",
-            "customerVpa": "1789002584@gbl",
-            "name": "Kalpana",
-            "userId": "string",
-            "mobileNo": "9876543210",
-            "respUrl": "https://api-dating-app.iceweb.in/api/v1/payment/callback",
-            "udf1": "28.7041",
-            "udf2": "77.1025",
-            "udf3": "string",
-            "udf4": "string",
-            "udf5": "string",
-            "udf6": "string",
-            "udf7": "string",
-            "udf8": "string",
-            "udf9": "string",
-            "udf10": "string",
-            "udf11": "string",
-            "udf12": "string",
-            "udf13": "string",
-            "udf14": "string",
-            "userVpa": "string"
-        };
-        // const paymentRequest = {
-        //   "mid": MERCHANT_ID,
-        //   "enckey": ENCRYPTION_KEY,
-        //   "orderNo": orderNo,
-        //   "amount": amount,
-        //   "currency": "INR",
-        //   "txnReqType": txnReqType,
-        //   "dateOfReg": new Date().toISOString().split("T")[0],
-        //   "customerVpa": "1789002584@gbl",
-        //   "emailId": "qureshi.t2000@gmail.com",
-        //   "name": billing_name,
-        //   "userId": "ABCDEF1010",
-        //   "mobileNo": billing_phone,
-        //   "respUrl": CALLBACK_URL,
-        //   "udf1": latitude,
-        //   "udf2": longitude,
-        //   "udf3": "String",
-        //   "udf4": "String",
-        //   "udf5": "String",
-        //   "udf6": "String",
-        //   "udf7": "String",
-        //   "udf8": "String",
-        //   "udf9": "String",
-        //   "udf10": "String",
-        //   "udf11": "String",
-        //   "udf12": "String",
-        //   "udf13": "String",
-        //   "udf14": "String",
-        //   "userVpa": "string"
-        // };
+            if (!emailId || !userID || !offerId) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Missing required fields: offerId, emailId, userID'
+                });
+            }
 
-        const encryptedPayload = encryptString(JSON.stringify(paymentRequest), ENCRYPTION_KEY);
+            const order_id = 'ORD' + Date.now().toString().toUpperCase();
+
+            const user = await getUserByUserEmail(emailId);
+
+            if (!user.status) {
+                return res.status(404).json({ status: false, message: 'User not found' });
+            }
+            const offer = await getOfferByOfferId(offerId);
+            if (!offer) {
+                return res.status(404).json({ status: false, message: 'Offer not found' });
+            }
+
+            const availableCoins = await getAvailableCoins(1, 30, offer.coinAmount);
+            if (!availableCoins.success || availableCoins.availableCoinCount === 0) {
+                return res.status(400).json({
+                    status: false,
+                    code: "NO_COINS_AVAILABLE",
+                    message: "No coins available in the system. Please try again later."
+                });
+            }
+
+            if (availableCoins.availableCoinCount < offer.coinAmount) {
+                return res.status(400).json({
+                    status: false,
+                    code: "INSUFFICIENT_COINS",
+                    message: `Not enough coins available. Required: ${offer.coinAmount}, Available: ${availableCoins.availableCoinCount}`
+                });
+            }
 
 
-        console.log("MERCHANT_ID: ", MERCHANT_ID, "PAYMENT_BASE_URL: ", PAYMENT_BASE_URL);
 
-        console.log("\n\nencryptedPayload: \n", encryptedPayload,"\n");
-        
-        const paymentUrl = `${PAYMENT_BASE_URL}?payload=${encodeURIComponent(encryptedPayload)}&mid=${MERCHANT_ID}`;
-        console.log(paymentRequest);
+            const paymentRequest = {
+                "mid": MERCHANT_ID,
+                "enckey": ENCRYPTION_KEY,
+                "orderNo": order_id,
+                "amount": `${parseFloat(offer.offerPrice).toFixed(2)}`,
+                "currency": "INR",
+                "txnReqType": "Slupi",
+                "emailId": `${emailId}`,
+                "dateOfReg": new Date().toISOString().split('T')[0],
+                "customerVpa": 'quershi.t2000-1@okaxis',
+                "name": `${user.userFirstName} ${user.userSurname}`,
+                "userId": userID,
+                "mobileNo": user.userPhone || "0000000000",
+                "respUrl": CALLBACK_URL,
+                "udf1": `${offerId}`,
+                "udf2": "string",
+                "udf3": "string",
+                "udf4": "string",
+                "udf5": "string",
+                "udf6": "string",
+                "udf7": "string",
+                "udf8": "string",
+                "udf9": "string",
+                "udf10": "string",
+                "udf11": "string",
+                "udf12": "string",
+                "udf13": "string",
+                "udf14": "string",
+                "userVpa": "string"
+            };
 
-        res.status(200).json({ status: true, url: paymentUrl });
+            await purchaseCoins(user.data.userID, offer.coinAmount, order_id, paymentRequest);
+
+            const encryptedPayload = encryptString(JSON.stringify(paymentRequest), ENCRYPTION_KEY);
+            const paymentUrl = `${PAYMENT_BASE_URL}?payload=${encodeURIComponent(encryptedPayload)}&mid=${MERCHANT_ID}`;
+            console.log("\npaymentRequest", paymentRequest);
+            console.log("\nencryptedPayload", encryptedPayload);
+            res.status(200).json({
+                status: true,
+                url: paymentUrl,
+                MID: MERCHANT_ID,
+                encryptedPayload: encryptedPayload,
+                paymentUrl: PAYMENT_BASE_URL,
+                paymentRequest: paymentRequest
+            });
+
+        } catch (error) {
+            console.error("Payment initiation error:", error);
+            res.status(500).json({
+                status: false,
+                message: 'Payment initiation failed',
+                error: error.message
+            });
+        }
     }
 }

@@ -196,31 +196,28 @@ CREATE TABLE
     );
 
 
-CREATE TABLE
-    `db_coin_store` (
-        `id` INT(11) NOT NULL AUTO_INCREMENT,
-        `coinStoreId` VARCHAR(100) NOT NULL,
-        `ownerId` VARCHAR(100) NULL,
-        `transactionId` VARCHAR(100) NULL,
-        `purchasedAt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id)
-    );
+	CREATE TABLE `db_coin_store` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `coinStoreId` varchar(100) NOT NULL,
+    `ownerId` varchar(100) DEFAULT NULL,
+    `transactionId` varchar(100) DEFAULT NULL,
+    `purchasedAt` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    PRIMARY KEY (`id`)
+    )
 
 CREATE TABLE `db_coin_transaction` (
-    `id` INT(11) NOT NULL AUTO_INCREMENT,
-    `coinTransactionId` CHAR(36) NOT NULL,
-    `orderNo` VARCHAR(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-    `status` ENUM('processing', 'cancelled', 'failed', 'success') NOT NULL DEFAULT 'processing',
-    `coinId` CHAR(36) NOT NULL,
-    `senderId` VARCHAR(255) NOT NULL,
-    `receiverId` VARCHAR(255) NOT NULL,
-    `coinCount` INT(11) NOT NULL,
-    `amount` FLOAT NOT NULL,
-    `transactionDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    `metaData` LONGTEXT,
-    PRIMARY KEY (`id`)
-);
-
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `coinTransactionId` char(36) NOT NULL,
+ `orderNo` varchar(36) NOT NULL,
+ `status` enum('processing','cancelled','failed','success') NOT NULL DEFAULT 'processing',
+ `senderId` varchar(255) NOT NULL,
+ `receiverId` varchar(255) NOT NULL,
+ `coinCount` int(11) NOT NULL,
+ `amount` float NOT NULL,
+ `transactionDate` timestamp NULL DEFAULT current_timestamp(),
+ `metaData` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+ PRIMARY KEY (`id`)
+)
 
 
 CREATE TABLE db_followers (
@@ -254,19 +251,21 @@ CREATE TABLE db_otp_verification (
 );
 
 CREATE TABLE `db_coin_payments` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `paymentId` VARCHAR(100) NOT NULL UNIQUE,
-  `userId` VARCHAR(100) NOT NULL,
-  `amount` DECIMAL(10,2) NOT NULL,
-  `coinCount` INT DEFAULT 0,
-  `paymentMethod` VARCHAR(50),
-  `status` VARCHAR(20) DEFAULT 'pending',
-  `transactionId` VARCHAR(100),
-  `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
-);
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `paymentId` varchar(100) NOT NULL,
+ `userId` varchar(100) NOT NULL,
+ `amount` decimal(10,2) NOT NULL,
+ `coinCount` int(11) DEFAULT 0,
+ `paymentMethod` varchar(50) DEFAULT NULL,
+ `status` varchar(20) DEFAULT 'pending',
+ `transactionId` varchar(100) DEFAULT NULL,
+ `createdAt` datetime DEFAULT current_timestamp(),
+ `updatedAt` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `paymentId` (`paymentId`),
+  KEY `userId` (`userId`),
+  CONSTRAINT `db_coin_payments_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
+) 
 
 CREATE TABLE
     `db_chat_messages` (

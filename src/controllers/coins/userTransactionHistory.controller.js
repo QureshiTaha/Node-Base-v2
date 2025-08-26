@@ -59,16 +59,17 @@ module.exports = () => {
 
       return res.status(200).json({
         status: true,
-        data: unifiedTransactions.map(row => {
+        totalTransactions: totalCount,
+        data: unifiedTransactions.map((row, index) => {
           let transactionType = "";
           let transactionLabel = "";
 
           if (row.senderId === userID) {
             transactionType = "sent";
             transactionLabel = `Sent to ${row.receiverFirstName}`;
-          } else if (row.receiverId === userID && row.senderId === "Store") {
+          } else if (row.receiverId === userID && row.senderId === "Purchased from Store") {
             transactionType = "received";
-            transactionLabel = "Coin(s) purchased from Store";
+            transactionLabel = "Purchased from Store";
           } else if (row.receiverId === userID) {
             transactionType = "received";
             transactionLabel = `Received from ${row.senderFirstName}`;
@@ -78,10 +79,12 @@ module.exports = () => {
             ...row,
             transactionType,
             transactionLabel,
-            haveMore,
-            totalCount,
+            ...(index === unifiedTransactions.length - 1
+              ? { haveMore, totalCount }
+              : {}),
           };
         })
+
 
       });
 

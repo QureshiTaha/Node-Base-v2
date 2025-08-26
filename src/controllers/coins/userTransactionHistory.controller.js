@@ -38,9 +38,16 @@ module.exports = () => {
             IFNULL(u.userSurname, '') AS receiverSurname,
             p.createdAt AS transactionDate,
             p.coinCount
-          FROM db_coin_payments p
-          LEFT JOIN db_users u ON p.userId = u.userID
-          WHERE p.userId = ?
+            FROM db_coin_payments p
+            LEFT JOIN db_users u ON p.userId = u.userID
+            WHERE p.userId = ?
+            AND NOT EXISTS (
+              SELECT 1 
+              FROM db_coin_transaction ct 
+              WHERE ct.receiverId = p.userId 
+                AND ct.coinCount = p.coinCount 
+                AND DATE(ct.transactionDate) = DATE(p.createdAt)
+            )
         ) AS combined
         ORDER BY transactionDate DESC
         LIMIT ? OFFSET ?
@@ -48,10 +55,23 @@ module.exports = () => {
 
 
       const totalCountResult = await sqlQuery(`
-        SELECT (
-          (SELECT COUNT(DISTINCT coinTransactionId) FROM db_coin_transaction WHERE senderId = ? OR receiverId = ?) +
-          (SELECT COUNT(*) FROM db_coin_payments WHERE userId = ?)
-        ) AS totalCount
+      SELECT COUNT(*) AS totalCount
+      FROM (
+        SELECT ct.coinTransactionId
+        FROM db_coin_transaction ct
+        WHERE ct.senderId = ? OR ct.receiverId = ?
+        UNION
+        SELECT p.paymentId
+        FROM db_coin_payments p
+        WHERE p.userId = ?
+          AND NOT EXISTS (
+            SELECT 1 
+            FROM db_coin_transaction ct 
+            WHERE ct.receiverId = p.userId 
+              AND ct.coinCount = p.coinCount 
+              AND DATE(ct.transactionDate) = DATE(p.createdAt)
+          )
+      ) AS totalCombined
       `, [userID, userID, userID]);
 
       const totalCount = totalCountResult[0]?.totalCount || 0;
@@ -67,13 +87,14 @@ module.exports = () => {
           if (row.senderId === userID) {
             transactionType = "sent";
             transactionLabel = `Sent to ${row.receiverFirstName}`;
-          } else if (row.receiverId === userID && row.senderId === "Purchased from Store") {
+          } else if (row.receiverId === userID && (row.senderId === "STORE" || row.senderFirstName === "Store" || row.senderId === "Purchased from Store")) {
             transactionType = "received";
             transactionLabel = "Purchased from Store";
           } else if (row.receiverId === userID) {
             transactionType = "received";
             transactionLabel = `Received from ${row.senderFirstName}`;
           }
+
 
           return {
             ...row,

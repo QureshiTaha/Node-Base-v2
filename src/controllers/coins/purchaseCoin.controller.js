@@ -42,49 +42,48 @@ module.exports = () => {
         });
       }
 
-      const payTranId = uuidv4();
+      const paymentId = uuidv4();
       const coinStoreIds = coinsResult.map(c => c.coinStoreId);
       const placeholders = coinStoreIds.map(() => '?').join(',');
 
-      const paymentId = uuidv4();
-      const transactionId = uuidv4();
-      const paymentMethod = 'internal';
-      const status = 'completed';
-      const amount = parseFloat((count * 1).toFixed(2)); 
+      const coinTransactionId = uuidv4();
+      const paymentMethod = 'upi';
+      const status = 'processing';  // ✅ initial status
+      const amount = parseFloat((count * 1).toFixed(2));
 
       await sqlQuery('START TRANSACTION');
 
       await sqlQuery(
         `UPDATE db_coin_store 
-         SET ownerId = ?, transactionId = ?, purchasedAt = NOW() 
-         WHERE coinStoreId IN (${placeholders})`,
-        [userID, payTranId, ...coinStoreIds]
+     SET ownerId = ?, transactionId = ?, purchasedAt = NOW() 
+  WHERE coinStoreId IN (${placeholders})`,
+        [userID, coinTransactionId, ...coinStoreIds]    // use coinTransactionId here
       );
 
-      const coinTransactionId = uuidv4();
+
       const senderId = 'Purchased from Store';
-      const orderNo = 'ORD-' + Date.now(); 
+      const orderNo = 'ORD-' + Date.now();
 
       const insertValues = [];
       const insertParams = [];
 
       for (const coin of coinsResult) {
         insertValues.push('(?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)');
-        insertParams.push(coinTransactionId,orderNo,'success', coin.coinStoreId, senderId, userID,1,amount,null);
+        insertParams.push(coinTransactionId, orderNo, 'success', coin.coinStoreId, senderId, userID, 1, amount, null);
       }
 
       await sqlQuery(`
-        INSERT INTO db_coin_transaction
-        (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
-      `, [uuidv4(), orderNo, 'processing', senderId, userID, count, amount, JSON.stringify({})]);
+      INSERT INTO db_coin_transaction
+      (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`
+        , [coinTransactionId, orderNo, 'processing', senderId, userID, count, amount, JSON.stringify({})]);
 
 
       await sqlQuery(
         `INSERT INTO db_coin_payments 
         (paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [paymentId, userID, amount, count, paymentMethod, status, transactionId]
+        [paymentId, userID, amount, count, paymentMethod, status, coinTransactionId]
       );
 
       await sqlQuery('COMMIT');
@@ -92,10 +91,11 @@ module.exports = () => {
       return res.status(200).json({
         status: true,
         msg: `${count} coin(s) purchased successfully`,
-        transactionId,
+        coinTransactionId,
         paymentId,
         coinIds: coinStoreIds
       });
+
 
     } catch (error) {
       await sqlQuery('ROLLBACK');

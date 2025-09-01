@@ -62,23 +62,31 @@ module.exports = () => {
 
       const coinIds = coinsToTransfer.map(c => c.coinStoreId);
 
-      const transactionId = uuidv4();
-      const orderNo = uuidv4();
+      const coinTransactionId = uuidv4(); // will be reused in db_coin_store
+      const orderNo = 'ORD-' + Date.now();
       const status = 'success';
       const amount = 0;
 
       await sqlQuery(
         `UPDATE db_coin_store 
-        SET ownerId = ?, transactionId = ?, purchasedAt = NOW()
+       SET ownerId = ?, transactionId = ?, purchasedAt = NOW()
         WHERE coinStoreId IN (?)`,
-        [receiverId, transactionId, coinIds]
+        [receiverId, coinTransactionId, coinIds]
       );
+
+      await sqlQuery(
+        `UPDATE db_coin_store 
+        SET ownerId = ?, transactionId = ?, purchasedAt = NOW()
+        WHERE coinStoreId IN (${coinIds.map(() => '?').join(',')})`,
+        [receiverId, coinTransactionId, ...coinIds]
+      );
+
 
       await sqlQuery(
         `INSERT INTO db_coin_transaction 
           (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
           VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
-        [transactionId, orderNo, status, senderId, receiverId, coinIds.length, amount, JSON.stringify({})]
+        [coinTransactionId, orderNo, status, senderId, receiverId, coinIds.length, amount, JSON.stringify({})]
       );
 
       await sqlQuery('COMMIT');

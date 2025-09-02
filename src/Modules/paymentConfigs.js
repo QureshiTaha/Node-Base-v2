@@ -20,21 +20,16 @@ function decryptString(base64Data, key) {
 }
 
 module.exports = {
-  // MERCHANT_ID: 'UATCOS00096BHO', //old
-  // ENCRYPTION_KEY: 'ulh1yx9kazhdsnnt2nmi9ydafwh744ks', //old
   MERCHANT_ID: 'SLCOS00054BHO',
   ENCRYPTION_KEY: 'ovnusv5r5crakbr9nghqmb1kcjmgncog',
-
-
-    // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/paymentrequest/seamless',
-  // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/LincPayUAT/uat/payin/paymentrequest', // For Web
-
-  // PAYMENT_BASE_URL: 'https://pg.icepe.in/paymentrequest', // For Web
   PAYMENT_BASE_URL: 'https://pg.solwio.in/paymentrequest/seamless',
-
-  // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/UATIntegration/uat/payin/paymentrequest', //for web
-  // PAYMENT_BASE_URL: 'https://uat.godemo.in/api/UATIntegration/paymentrequest/seamless',
+  PAYOUT_BASE_URL: 'https://payout.solwio.in/core-banking/initiate-payout',
   CALLBACK_URL: 'https://api-dating-app.iceweb.in/api/v1/payment/callback', // Update to your domain
+  PAYOUT_CALLBACK_URL: 'https://api-dating-app.iceweb.in/api/v1/payment/callback-payout', // Update to your domain
+  PAYOUT_API_KEY: '9t8MPIExEmsMg2P8Ckwa3M0HZbaaipqHEyYQzA',
+  PAYOUT_SECRET: 'ElsueF2vIHDCeVkWn4GgcMKT4KDQP1sMY90pNZ',
+  PAYOUT_THROUGH: 'BANK',
+  PAYOUT_TRANSFER_TYPE: 'IMPS',
   encryptString,
   decryptString
 };

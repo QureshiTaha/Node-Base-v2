@@ -2,6 +2,7 @@ const express = require('express');
 const { userController, testController } = require('../controllers');
 const { verifyToken, isAdmin } = require('../Modules/authJwt');
 const refreshToken = require('../Modules/refreshToken');
+const payoutController = require('../controllers/users/userPayoutDetails.controllers');
 const {
   loginController,
   signupController,
@@ -22,6 +23,7 @@ const {
 } = userController();
 
 const { testingController } = testController();
+const { addPayoutDetails, updatePayoutDetails } = payoutController();
 
 const router = express.Router();
 router.route('/').get(testingController);
@@ -43,6 +45,8 @@ router.route('/reset-password').post(resetPasswordController);
 router.route('/google-callback').get(googleCallbackController);
 router.route('/auth/google').get(googleAuthController);
 router.route('/google-login').post(googleApiAuthController); //api/auth/google
+router.route('/details/payout').post(addPayoutDetails);
+router.route('/details/payout').put(updatePayoutDetails);
 
 
 

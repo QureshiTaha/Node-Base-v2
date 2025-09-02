@@ -111,7 +111,7 @@ module.exports = {
       return error;
     }
   },
- getUserByUserEmail: async function (userEmail) {
+  getUserByUserEmail: async function (userEmail) {
     try {
       const result = await sqlQuery(
         `SELECT * FROM db_users WHERE userEmail = ? AND userDeleted IS NULL LIMIT 1`,
@@ -149,42 +149,42 @@ module.exports = {
       return error;
     }
   },
-getAllUsers: async function (search = "", limit = 10, offset = 0) {
-  try {
-    const searchQuery = `%${search}%`;
+  getAllUsers: async function (search = "", limit = 10, offset = 0) {
+    try {
+      const searchQuery = `%${search}%`;
 
-    // Get users with LIMIT & OFFSET
-    const userList = await sqlQuery(
-      `SELECT * 
+      // Get users with LIMIT & OFFSET
+      const userList = await sqlQuery(
+        `SELECT * 
        FROM db_users 
        WHERE (CONCAT(userFirstName, ' ', userSurname) LIKE ? 
               OR userEmail LIKE ? 
               OR userPhone LIKE ?)
        AND (userDeleted IS NULL OR userDeleted != 1)
        LIMIT ? OFFSET ?`,
-      [searchQuery, searchQuery, searchQuery, limit, offset]
-    );
+        [searchQuery, searchQuery, searchQuery, limit, offset]
+      );
 
-    // Get total count
-    const totalCountResult = await sqlQuery(
-      `SELECT COUNT(*) as totalCount 
+      // Get total count
+      const totalCountResult = await sqlQuery(
+        `SELECT COUNT(*) as totalCount 
        FROM db_users 
        WHERE (CONCAT(userFirstName, ' ', userSurname) LIKE ? 
               OR userEmail LIKE ? 
               OR userPhone LIKE ?)
        AND (userDeleted IS NULL OR userDeleted != 1)`,
-      [searchQuery, searchQuery, searchQuery]
-    );
+        [searchQuery, searchQuery, searchQuery]
+      );
 
-    const totalCount = totalCountResult[0]?.totalCount || 0;
+      const totalCount = totalCountResult[0]?.totalCount || 0;
 
-    return { users: userList, totalCount };
-  } catch (error) {
-    console.error(error);
-    throw error;
+      return { users: userList, totalCount };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
-}
-,
+  ,
   checkIfExist: async function (userID) {
     try {
       const query = `SELECT count(1) as count FROM db_users WHERE userID =  ? AND (userDeleted IS NULL OR userDeleted != 1)`;

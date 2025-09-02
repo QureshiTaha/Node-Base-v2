@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 module.exports = {
   getAllOffers: async () => {
     try {
-      return await sqlQuery(`SELECT * FROM db_coin_offers WHERE isActive = ?`,["1"]);
+      return await sqlQuery(`SELECT * FROM db_coin_offers WHERE isActive = ?`, ["1"]);
     } catch (err) {
       console.error('Error fetching all offers:', err);
       throw err;
@@ -110,22 +110,22 @@ module.exports = {
         result[result.length - 1].totalCount = totalCount;
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         code: (requiredCoins && totalCount < requiredCoins) ? "INSUFFICIENT_COINS" : "ENOUGH_COINS",
-        msg: (requiredCoins && totalCount < requiredCoins) 
-            ? `Not enough coins available. Required: ${requiredCoins}, Available: ${totalCount}` 
-            : 'Available coins fetched',
-        availableCoinCount: totalCount, 
-        data: result 
+        msg: (requiredCoins && totalCount < requiredCoins)
+          ? `Not enough coins available. Required: ${requiredCoins}, Available: ${totalCount}`
+          : 'Available coins fetched',
+        availableCoinCount: totalCount,
+        data: result
       };
     } catch (err) {
       console.error('Error fetching available coins:', err);
       throw err;
     }
   },
-  
-  purchaseCoins: async (userID, count,orderNo,metaData) => {
+
+  purchaseCoins: async (userID, count, orderNo, metaData) => {
     if (!userID || !count) throw new Error('userID and count are required');
     if (isNaN(count) || count <= 0) throw new Error('Count must be a positive number');
 
@@ -166,22 +166,22 @@ module.exports = {
       const senderId = 'Purchased from Store';
       // const orderNo = uuidv4();
 
-      const totalCoins = coinsResult.length;  
-      const totalAmount = parseFloat((totalCoins * 1).toFixed(2)); 
+      const totalCoins = coinsResult.length;
+      const totalAmount = parseFloat((totalCoins * 1).toFixed(2));
 
       await sqlQuery(
         `INSERT INTO db_coin_transaction 
         (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
         [
-          coinTransactionId,  
-          orderNo,           
-          'processing',        
-          senderId,         
-          userID,           
-          totalCoins,        
-          totalAmount,       
-          JSON.stringify(metaData)              
+          coinTransactionId,
+          orderNo,
+          'processing',
+          senderId,
+          userID,
+          totalCoins,
+          totalAmount,
+          JSON.stringify(metaData)
         ]
       );
 
@@ -253,6 +253,27 @@ module.exports = {
       throw err;
     }
   },
+  totalUserCoinsCount: async ({ userID }) => {
+    try {
+      const ac = await sqlQuery(
+        `SELECT 
+            s.ownerId,
+            COUNT(s.id) AS availableCoins
+        FROM db_coin_store s
+        JOIN db_coin_transaction t 
+            ON s.transactionId = t.coinTransactionId AND t.status = 'success'
+        WHERE s.ownerId = ?  
+        GROUP BY s.ownerId;`,
+        [userID]
+      );
+      const availableCoins = ac && ac.length > 0 ? ac[0].availableCoins : 0;
+      return availableCoins || 0;
+      // return availableCoins || 0;
+    } catch (err) {
+      console.error('Error fetching total user coins count:', err);
+      throw err;
+    }
+  },
   getUserTotalCoins: async (userID, page = 1, limit = 10) => {
     try {
       const _page = page > 0 ? page : 1;
@@ -302,52 +323,52 @@ module.exports = {
     }
   },
   sendCoins: async (senderId, receiverId, count) => {
-  if (!senderId || !receiverId || !count) throw new Error('senderId, receiverId, and count are required');
-  const numCount = Number(count);
-  if (!Number.isInteger(numCount) || numCount <= 0) throw new Error('count must be positive integer');
+    if (!senderId || !receiverId || !count) throw new Error('senderId, receiverId, and count are required');
+    const numCount = Number(count);
+    if (!Number.isInteger(numCount) || numCount <= 0) throw new Error('count must be positive integer');
 
-  let transactionStarted = false;
-  try {
-    await sqlQuery('START TRANSACTION');
-    transactionStarted = true;
+    let transactionStarted = false;
+    try {
+      await sqlQuery('START TRANSACTION');
+      transactionStarted = true;
 
-    const [sender] = await sqlQuery(`SELECT 1 FROM db_users WHERE userID=? AND userDeleted IS NULL LIMIT 1`, [senderId]);
-    const [receiver] = await sqlQuery(`SELECT 1 FROM db_users WHERE userID=? AND userDeleted IS NULL LIMIT 1`, [receiverId]);
-    if (!sender || !receiver) throw new Error(sender ? 'Receiver not found' : 'Sender not found');
+      const [sender] = await sqlQuery(`SELECT 1 FROM db_users WHERE userID=? AND userDeleted IS NULL LIMIT 1`, [senderId]);
+      const [receiver] = await sqlQuery(`SELECT 1 FROM db_users WHERE userID=? AND userDeleted IS NULL LIMIT 1`, [receiverId]);
+      if (!sender || !receiver) throw new Error(sender ? 'Receiver not found' : 'Sender not found');
 
-    const coinsToTransfer = await sqlQuery(
-      `SELECT coinStoreId FROM db_coin_store WHERE ownerId=? LIMIT ? FOR UPDATE`,
-      [senderId, numCount]
-    );
-    if (coinsToTransfer.length < numCount) throw new Error(`Sender only has ${coinsToTransfer.length} coins available`);
+      const coinsToTransfer = await sqlQuery(
+        `SELECT coinStoreId FROM db_coin_store WHERE ownerId=? LIMIT ? FOR UPDATE`,
+        [senderId, numCount]
+      );
+      if (coinsToTransfer.length < numCount) throw new Error(`Sender only has ${coinsToTransfer.length} coins available`);
 
-    const coinIds = coinsToTransfer.map(c => c.coinStoreId);
+      const coinIds = coinsToTransfer.map(c => c.coinStoreId);
 
-    await sqlQuery(
-      `UPDATE db_coin_store SET ownerId=? WHERE coinStoreId IN (?)`,
-      [receiverId, coinIds]
-    );
+      await sqlQuery(
+        `UPDATE db_coin_store SET ownerId=? WHERE coinStoreId IN (?)`,
+        [receiverId, coinIds]
+      );
 
-    const transactionId = uuidv4();
-    const orderNo = uuidv4();
+      const transactionId = uuidv4();
+      const orderNo = uuidv4();
 
-    await sqlQuery(
-      `INSERT INTO db_coin_transaction 
+      await sqlQuery(
+        `INSERT INTO db_coin_transaction 
         (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
-      [transactionId, orderNo, 'success', senderId, receiverId, coinIds.length, 0, JSON.stringify({})]
-    );
+        [transactionId, orderNo, 'success', senderId, receiverId, coinIds.length, 0, JSON.stringify({})]
+      );
 
-    await sqlQuery('COMMIT');
-    transactionStarted = false;
+      await sqlQuery('COMMIT');
+      transactionStarted = false;
 
-    return { success: true, msg: `${coinIds.length} coins transferred`, transferredCoins: coinIds };
-  } catch (err) {
-    if (transactionStarted) await sqlQuery('ROLLBACK').catch(e => console.error('Rollback failed', e));
-    console.error('Send coins error:', err);
-    throw err;
-  }
-},
+      return { success: true, msg: `${coinIds.length} coins transferred`, transferredCoins: coinIds };
+    } catch (err) {
+      if (transactionStarted) await sqlQuery('ROLLBACK').catch(e => console.error('Rollback failed', e));
+      console.error('Send coins error:', err);
+      throw err;
+    }
+  },
   getUserTransactionHistory: async (userID, page = 1, limit = 10) => {
     try {
       const offset = (page - 1) * limit;
@@ -393,6 +414,47 @@ module.exports = {
     } catch (err) {
       console.error('Error fetching transaction history:', err);
       throw err;
+    }
+  },
+  withdrawCoins: async (data) => {
+    console.log(data);
+
+    const { userID, coinCount, amount, reference_id, PAYOUT_TRANSFER_TYPE } = data;
+    if (!userID || !coinCount || !amount || !reference_id || !PAYOUT_TRANSFER_TYPE) throw new Error('userID, coinCount, reference_id and amount are required');
+    const numAmount = amount
+
+    let transactionStarted = false;
+    try {
+      await sqlQuery('START TRANSACTION');
+      transactionStarted = true;
+      const [user] = await sqlQuery('SELECT 1 FROM db_users WHERE userID = ? AND userDeleted IS NULL LIMIT 1', [userID]);
+      if (!user) throw new Error('User not found or deleted');
+
+      const coin = await sqlQuery('SELECT coinStoreId FROM db_coin_store WHERE ownerId = ? order by id desc LIMIT ?', [userID, coinCount]);
+      if (!coin) throw new Error('Coin not found or not owned by user');
+
+
+      for (let i = 0; i < coinCount; i++) {
+        await sqlQuery('UPDATE db_coin_store SET ownerId = NULL, transactionId = Null, purchasedAt = Null WHERE coinStoreId = ?', [coin[i].coinStoreId]);
+      }
+      const transactionId = reference_id;
+      const orderNo = `DEBIT-${new Date().getTime()}`
+      const paymentId = uuidv4();
+
+      await sqlQuery(
+        'INSERT INTO db_coin_transaction (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)',
+        [transactionId, orderNo, 'processing', 'withdraw', userID, coinCount, numAmount, JSON.stringify({})]
+      );
+      await sqlQuery('INSERT INTO db_coin_payments (paymentId,paymentMethod, userId, coinCount,amount, createdAt, transactionId, paymentType, status) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?,?)', [paymentId, PAYOUT_TRANSFER_TYPE, userID, coinCount, numAmount, transactionId, 'debit', 'processing']);
+
+      await sqlQuery('COMMIT');
+      transactionStarted = false;
+
+      return { success: true, msg: 'Coins withdrawn successfully' };
+    } catch (err) {
+      if (transactionStarted) await sqlQuery('ROLLBACK').catch(e => console.error('Rollback failed', e));
+      console.error('Withdraw coins error:', err);
+      return { success: false, msg: err.message };
     }
   }
 };

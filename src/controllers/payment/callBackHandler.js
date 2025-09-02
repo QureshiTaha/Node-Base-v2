@@ -60,8 +60,7 @@ module.exports = (dependencies) => {
                 `SELECT * FROM db_coin_store WHERE transactionId = ? OR ownerId IS NULL LIMIT 1`,
                 [transaction.coinTransactionId]
             );
-            
-            console.log('coinStore',coinStore);
+
             if (coinStore) {
                 await sqlQuery(
                     `UPDATE db_coin_store
@@ -74,14 +73,15 @@ module.exports = (dependencies) => {
             const paymentId = uuidv4();
             await sqlQuery(
                 `INSERT INTO db_coin_payments
-                (paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+                (paymentId, userId, amount, coinCount, paymentMethod,paymentType, status, transactionId, createdAt, updatedAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [
                     paymentId,
                     transaction.receiverId,
                     parsedData.amount,
                     transaction.coinCount,
                     "LP_UPI",
+                    "credit",
                     parsedData.txnStatus,
                     parsedData.txnId,
                 ]

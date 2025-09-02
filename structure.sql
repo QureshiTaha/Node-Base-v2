@@ -107,12 +107,7 @@ CREATE TABLE
         `title` VARCHAR(255) NOT NULL,
         `description` text DEFAULT NULL,
         `created_by` VARCHAR(100) NOT NULL,
-        `status` enum (
-            'not_assigned',
-            'pending',
-            'in_progress',
-            'completed'
-        ) DEFAULT 'not_assigned',
+        `status` enum ('not_assigned', 'pending', 'in_progress', 'completed') DEFAULT 'not_assigned',
         `priority` enum ('low', 'medium', 'high') DEFAULT 'medium',
         `due_date` datetime DEFAULT NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
@@ -138,14 +133,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    `db_projects` (
-        `id` INT (11) NOT NULL AUTO_INCREMENT,
-        `projectID` VARCHAR(100) NOT NULL,
-        `name` VARCHAR(50) NOT NULL,
-        `description` text NOT NULL,
-        `project_meta` VARCHAR(200) NOT NULL,
-        PRIMARY KEY (`id`)
-    );
+    `db_projects` (`id` INT (11) NOT NULL AUTO_INCREMENT, `projectID` VARCHAR(100) NOT NULL, `name` VARCHAR(50) NOT NULL, `description` text NOT NULL, `project_meta` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`));
 
 CREATE TABLE
     `db_logs` (
@@ -161,16 +149,16 @@ CREATE TABLE
 
 CREATE TABLE
     `db_reels` (
-        `id` int (11) NOT NULL AUTO_INCREMENT,
-        `reelId` varchar(100) NOT NULL,
-        `filepath` varchar(255) NOT NULL,
-        `userID` varchar(100) NOT NULL,
-        `title` varchar(100) DEFAULT 'untitled',
-        `description` varchar(100) NOT NULL,
-        `likes` bigint (20) DEFAULT 0,
-        `comments` int (11) NOT NULL DEFAULT 0,
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `reelId` VARCHAR(100) NOT NULL,
+        `filepath` VARCHAR(255) NOT NULL,
+        `userID` VARCHAR(100) NOT NULL,
+        `title` VARCHAR(100) DEFAULT 'untitled',
+        `description` VARCHAR(100) NOT NULL,
+        `likes` BIGINT (20) DEFAULT 0,
+        `comments` INT (11) NOT NULL DEFAULT 0,
         `isArchive` enum ('0', '1') NOT NULL DEFAULT '0',
-        `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+        `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
         PRIMARY KEY (`id`),
         KEY `user-reel-relation` (`userID`),
         CONSTRAINT `user-reel-relation` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`)
@@ -178,94 +166,119 @@ CREATE TABLE
 
 CREATE TABLE
     `db_reel_comments` (
-        `commentId` varchar(255) NOT NULL,
-        `reelId` varchar(255) NOT NULL,
-        `userID` varchar(255) NOT NULL,
+        `commentId` VARCHAR(255) NOT NULL,
+        `reelId` VARCHAR(255) NOT NULL,
+        `userID` VARCHAR(255) NOT NULL,
         `commentText` text NOT NULL,
-        `commentedAt` datetime DEFAULT current_timestamp(),
+        `commentedAt` datetime DEFAULT CURRENT_TIMESTAMP(),
         PRIMARY KEY (`commentId`)
     );
 
 CREATE TABLE
     `db_reel_likes` (
-        `id` int (11) NOT NULL AUTO_INCREMENT,
-        `userID` varchar(255) DEFAULT NULL,
-        `reelId` varchar(255) DEFAULT NULL,
-        `timeStamp` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `userID` VARCHAR(255) DEFAULT NULL,
+        `reelId` VARCHAR(255) DEFAULT NULL,
+        `timeStamp` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
         PRIMARY KEY (`id`)
     );
 
+CREATE TABLE
+    `db_coin_store` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `coinStoreId` VARCHAR(100) NOT NULL,
+        `ownerId` VARCHAR(100) DEFAULT NULL,
+        `transactionId` VARCHAR(100) DEFAULT NULL,
+        `purchasedAt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`)
+    );
 
-	CREATE TABLE `db_coin_store` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `coinStoreId` varchar(100) NOT NULL,
-    `ownerId` varchar(100) DEFAULT NULL,
-    `transactionId` varchar(100) DEFAULT NULL,
-    `purchasedAt` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-    PRIMARY KEY (`id`)
-    )
+CREATE TABLE
+    `db_coin_transaction` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `coinTransactionId` CHAR(36) NOT NULL,
+        `orderNo` VARCHAR(36) NOT NULL,
+        `status` enum ('processing', 'cancelled', 'failed', 'success', 'withdraw-success', 'withdraw-failed') NOT NULL DEFAULT 'processing',
+        `senderId` VARCHAR(255) NOT NULL,
+        `receiverId` VARCHAR(255) NOT NULL,
+        `coinCount` INT (11) NOT NULL,
+        `amount` FLOAT NOT NULL,
+        `transactionDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP(),
+        `metaData` longtext CHARACTER
+        SET
+            utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+            PRIMARY KEY (`id`)
+    );
 
-CREATE TABLE `db_coin_transaction` (
- `id` int(11) NOT NULL AUTO_INCREMENT,
- `coinTransactionId` char(36) NOT NULL,
- `orderNo` varchar(36) NOT NULL,
- `status` enum('processing','cancelled','failed','success') NOT NULL DEFAULT 'processing',
- `senderId` varchar(255) NOT NULL,
- `receiverId` varchar(255) NOT NULL,
- `coinCount` int(11) NOT NULL,
- `amount` float NOT NULL,
- `transactionDate` timestamp NULL DEFAULT current_timestamp(),
- `metaData` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
- PRIMARY KEY (`id`)
-)
+CREATE TABLE
+    db_followers (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `followBy` VARCHAR(50) NOT NULL,
+        `followTo` VARCHAR(50) NOT NULL,
+        `followAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX (followBy),
+        INDEX (followTo)
+    );
 
+CREATE TABLE
+    `db_coin_offers` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `offerId` VARCHAR(36) NOT NULL,
+        `coinAmount` INT (11) NOT NULL,
+        `actualPrice` DECIMAL(10, 2) NOT NULL,
+        `offerPrice` DECIMAL(10, 2) NOT NULL,
+        `createdAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        `isActive` tinyint (1) DEFAULT 1,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `offerId` (`offerId`)
+    );
 
-CREATE TABLE db_followers (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `followBy` VARCHAR(50) NOT NULL,
-  `followTo` VARCHAR(50) NOT NULL,
-  `followAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  INDEX (followBy),
-  INDEX (followTo)
-);
+CREATE TABLE
+    db_otp_verification (
+        `id` INT AUTO_INCREMENT PRIMARY KEY,
+        `userID` VARCHAR(255) UNIQUE,
+        `otp` VARCHAR(6),
+        `attempt` INT,
+        `dateUpdated` DATETIME,
+        `coolDownTime` DATETIME,
+        FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE
+    );
 
-CREATE TABLE db_coin_offers (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `offerId` VARCHAR(36) NOT NULL UNIQUE,
-  `coinAmount` INT NOT NULL,
-  `actualPrice` DECIMAL(10, 2) NOT NULL,
-  `offerPrice` DECIMAL(10, 2) NOT NULL,
-  `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `isActive` TINYINT(1) DEFAULT 1
-);
+CREATE TABLE
+    `db_coin_payments` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `paymentId` VARCHAR(100) NOT NULL,
+        `userId` VARCHAR(100) NOT NULL,
+        `amount` DECIMAL(10, 2) NOT NULL,
+        `coinCount` INT (11) DEFAULT 0,
+        `paymentMethod` VARCHAR(50) DEFAULT NULL,
+        `paymentType` enum ('credit', 'debit', '', '') DEFAULT NULL,
+        `status` VARCHAR(20) DEFAULT 'pending',
+        `transactionId` VARCHAR(100) DEFAULT NULL,
+        `createdAt` datetime DEFAULT CURRENT_TIMESTAMP(),
+        `updatedAt` datetime DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `paymentId` (`paymentId`),
+        KEY `userId` (`userId`),
+        CONSTRAINT `db_coin_payments_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
+    );
 
-CREATE TABLE db_otp_verification (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `userID` VARCHAR(255) UNIQUE,
-  `otp` VARCHAR(6),
-  `attempt` INT,
-  `dateUpdated` DATETIME,
-  `coolDownTime` DATETIME,
-  FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`) ON DELETE CASCADE
-);
-
-CREATE TABLE `db_coin_payments` (
- `id` int(11) NOT NULL AUTO_INCREMENT,
- `paymentId` varchar(100) NOT NULL,
- `userId` varchar(100) NOT NULL,
- `amount` decimal(10,2) NOT NULL,
- `coinCount` int(11) DEFAULT 0,
- `paymentMethod` varchar(50) DEFAULT NULL,
- `status` varchar(20) DEFAULT 'pending',
- `transactionId` varchar(100) DEFAULT NULL,
- `createdAt` datetime DEFAULT current_timestamp(),
- `updatedAt` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `paymentId` (`paymentId`),
-  KEY `userId` (`userId`),
-  CONSTRAINT `db_coin_payments_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `db_users` (`userID`)
-) 
+CREATE TABLE
+    `db_userpayout_details` (
+        `id` INT (11) NOT NULL AUTO_INCREMENT,
+        `userID` VARCHAR(100),
+        `payout_userEmail` VARCHAR(50) NOT NULL,
+        `payout_ifscCode` VARCHAR(20) NOT NULL,
+        `payout_mobileNumber` VARCHAR(13) NOT NULL,
+        `payout_payeeName` text NOT NULL,
+        `payout_toAccount` VARCHAR(20) NOT NULL,
+        `payout_toUpi` VARCHAR(30) NOT NULL,
+        `payout_meta` longtext DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        KEY `payout_userRelation` (`userID`),
+        CONSTRAINT `payout_userRelation` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`)
+    );
 
 CREATE TABLE
     `db_chat_messages` (
@@ -284,7 +297,7 @@ CREATE TABLE
         KEY `idx_chat_messages_chatid_timestamp` (`chatID`, `timestamp`),
         KEY `idx_chatID_timestamp` (`chatID`, `timestamp`),
         CONSTRAINT `db_chat_messages_ibfk_1` FOREIGN KEY (`senderID`) REFERENCES `db_users` (`userID`)
-);
+    );
 
 CREATE TABLE
     `db_chats` (
@@ -313,4 +326,4 @@ CREATE TABLE
         KEY `chatID` (`chatID`),
         CONSTRAINT `db_chat_members_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `db_users` (`userID`),
         CONSTRAINT `db_chat_members_ibfk_2` FOREIGN KEY (`chatID`) REFERENCES `db_chats` (`chatID`)
-);
+    );

@@ -47,7 +47,7 @@ module.exports = () => {
       const placeholders = coinStoreIds.map(() => '?').join(',');
 
       const coinTransactionId = uuidv4();
-      const paymentMethod = 'upi';
+      const paymentMethod = 'UPI';
       const status = 'processing';  // ✅ initial status
       const amount = parseFloat((count * 1).toFixed(2));
 
@@ -81,9 +81,9 @@ module.exports = () => {
 
       await sqlQuery(
         `INSERT INTO db_coin_payments 
-        (paymentId, userId, amount, coinCount, paymentMethod, status, transactionId, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [paymentId, userID, amount, count, paymentMethod, status, coinTransactionId]
+        (paymentId, userId, amount, coinCount, paymentMethod,paymentType, status, transactionId, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [paymentId, userID, amount, count, paymentMethod, 'credit', status, coinTransactionId]
       );
 
       await sqlQuery('COMMIT');

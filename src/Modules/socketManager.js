@@ -289,4 +289,12 @@ const initializeSocket = (server) => {
   });
 };
 
-module.exports = { initializeSocket };
+// ✅ Getter function
+const getIO = () => {
+  if (!io) {
+    throw new Error("Socket.io not initialized yet!");
+  }
+  return io;
+};
+
+module.exports = { initializeSocket, getIO };

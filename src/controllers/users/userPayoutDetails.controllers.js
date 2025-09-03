@@ -1,7 +1,7 @@
 const userPayoutUseCase = require('./userPayoutUseCase');
 
 module.exports = (dependencies) => {
-    const { checkIfExist, addPayoutDetails, updatePayoutDetails } = userPayoutUseCase;
+    const { checkIfExist, addPayoutDetails, updatePayoutDetails,getPayoutDetailByUserID } = userPayoutUseCase;
     return {
         addPayoutDetails: async (req, res) => {
             try {
@@ -48,7 +48,17 @@ module.exports = (dependencies) => {
                 console.error('Error updating Payout Details | stacktrace:\n', error);
                 return res.status(500).json({ success: false, message: error.message });
             }
-        }
+        },
+        getPayoutDetails: async (req, res) => {
+            try {
+                const { userID } = req.params;
+                const result = await getPayoutDetailByUserID({ userID });
+                res.status(result.success ? 200 : 500).json(result);
+            } catch (error) {
+                console.error('Error getting Payout Details | stacktrace:\n', error);
+                return res.status(500).json({ success: false, message: error.message });
+            }
+        },
     }
 };
 

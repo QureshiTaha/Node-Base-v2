@@ -23,7 +23,7 @@ const {
 } = userController();
 
 const { testingController } = testController();
-const { addPayoutDetails, updatePayoutDetails } = payoutController();
+const { addPayoutDetails, updatePayoutDetails,getPayoutDetails } = payoutController();
 
 const router = express.Router();
 router.route('/').get(testingController);
@@ -45,6 +45,7 @@ router.route('/reset-password').post(resetPasswordController);
 router.route('/google-callback').get(googleCallbackController);
 router.route('/auth/google').get(googleAuthController);
 router.route('/google-login').post(googleApiAuthController); //api/auth/google
+router.route('/details/payout/:userID').get(getPayoutDetails);
 router.route('/details/payout').post(addPayoutDetails);
 router.route('/details/payout').put(updatePayoutDetails);
 

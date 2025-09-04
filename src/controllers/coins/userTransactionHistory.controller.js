@@ -6,29 +6,18 @@ module.exports = () => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
+    const paymentType = req.query.paymentType || null;
 
     try {
-      const unifiedTransactions = await sqlQuery(`
-        SELECT * FROM (
-          SELECT 
-            ct.coinTransactionId,
-            ct.senderId,
-            IFNULL(sender.userFirstName, 'Store') AS senderFirstName,
-            IFNULL(sender.userSurname, '') AS senderSurname,
-            ct.receiverId,
-            IFNULL(receiver.userFirstName, 'Unknown') AS receiverFirstName,
-            IFNULL(receiver.userSurname, '') AS receiverSurname,
-            MAX(ct.transactionDate) AS transactionDate,
-            SUM(ct.coinCount) AS coinCount,
-            ct.status AS status
-          FROM db_coin_transaction ct
-          LEFT JOIN db_users sender ON ct.senderId = sender.userID
-          LEFT JOIN db_users receiver ON ct.receiverId = receiver.userID
-          WHERE ct.senderId = ? OR ct.receiverId = ?
-          GROUP BY ct.coinTransactionId, ct.senderId, ct.receiverId
+      // Build SQL dynamically based on paymentType
+      let sql = '';
+      let countSql = '';
+      let params = [];
+      let countParams = [];
 
-          UNION ALL
-
+      if (paymentType) {
+        // Only db_coin_payments filtered by paymentType
+        sql = `
           SELECT 
             p.paymentId AS coinTransactionId,
             'STORE' AS senderId,
@@ -39,71 +28,126 @@ module.exports = () => {
             IFNULL(u.userSurname, '') AS receiverSurname,
             p.createdAt AS transactionDate,
             p.coinCount,
-            p.status
+            p.status,
+            p.paymentType
           FROM db_coin_payments p
           LEFT JOIN db_users u ON p.userId = u.userID
-          WHERE p.userId = ?
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM db_coin_transaction ct 
-              WHERE ct.receiverId = p.userId 
-                AND ct.coinCount = p.coinCount 
-                AND DATE(ct.transactionDate) = DATE(p.createdAt)
-            )
-        ) AS combined
-        ORDER BY transactionDate DESC
-        LIMIT ? OFFSET ?
-      `, [userID, userID, userID, limit, offset]);
+          WHERE p.userId = ? AND p.paymentType = ?
+          ORDER BY p.createdAt DESC
+          LIMIT ? OFFSET ?
+        `;
+        params = [userID, paymentType, limit, offset];
 
-
-      const totalCountResult = await sqlQuery(`
-        SELECT COUNT(*) AS totalCount
-        FROM (
-          SELECT ct.coinTransactionId
-          FROM db_coin_transaction ct
-          WHERE ct.senderId = ? OR ct.receiverId = ?
-          UNION
-          SELECT p.paymentId
+        countSql = `
+          SELECT COUNT(*) AS totalCount
           FROM db_coin_payments p
-          WHERE p.userId = ?
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM db_coin_transaction ct 
-              WHERE ct.receiverId = p.userId 
-                AND ct.coinCount = p.coinCount 
-                AND DATE(ct.transactionDate) = DATE(p.createdAt)
-            )
-        ) AS totalCombined
-      `, [userID, userID, userID]);
+          WHERE p.userId = ? AND p.paymentType = ?
+        `;
+        countParams = [userID, paymentType];
+      } else {
+        // Original unified query (both tables)
+        sql = `
+          SELECT * FROM (
+            SELECT 
+              ct.coinTransactionId,
+              ct.senderId,
+              IFNULL(sender.userFirstName, 'Store') AS senderFirstName,
+              IFNULL(sender.userSurname, '') AS senderSurname,
+              ct.receiverId,
+              IFNULL(receiver.userFirstName, 'Unknown') AS receiverFirstName,
+              IFNULL(receiver.userSurname, '') AS receiverSurname,
+              MAX(ct.transactionDate) AS transactionDate,
+              SUM(ct.coinCount) AS coinCount,
+              ct.status AS status,
+              NULL AS paymentType
+            FROM db_coin_transaction ct
+            LEFT JOIN db_users sender ON ct.senderId = sender.userID
+            LEFT JOIN db_users receiver ON ct.receiverId = receiver.userID
+            WHERE ct.senderId = ? OR ct.receiverId = ?
+            GROUP BY ct.coinTransactionId, ct.senderId, ct.receiverId
 
+            UNION ALL
+
+            SELECT 
+              p.paymentId AS coinTransactionId,
+              'STORE' AS senderId,
+              'Store' AS senderFirstName,
+              '' AS senderSurname,
+              p.userId AS receiverId,
+              IFNULL(u.userFirstName, 'Unknown') AS receiverFirstName,
+              IFNULL(u.userSurname, '') AS receiverSurname,
+              p.createdAt AS transactionDate,
+              p.coinCount,
+              p.status,
+              p.paymentType
+            FROM db_coin_payments p
+            LEFT JOIN db_users u ON p.userId = u.userID
+            WHERE p.userId = ?
+              AND NOT EXISTS (
+                SELECT 1 
+                FROM db_coin_transaction ct 
+                WHERE ct.receiverId = p.userId 
+                  AND ct.coinCount = p.coinCount 
+                  AND DATE(ct.transactionDate) = DATE(p.createdAt)
+              )
+          ) AS combined
+          ORDER BY transactionDate DESC
+          LIMIT ? OFFSET ?
+        `;
+        params = [userID, userID, userID, limit, offset];
+
+        countSql = `
+          SELECT COUNT(*) AS totalCount
+          FROM (
+            SELECT ct.coinTransactionId, NULL AS paymentType
+            FROM db_coin_transaction ct
+            WHERE ct.senderId = ? OR ct.receiverId = ?
+
+            UNION
+            SELECT p.paymentId, p.paymentType
+            FROM db_coin_payments p
+            WHERE p.userId = ?
+              AND NOT EXISTS (
+                SELECT 1 
+                FROM db_coin_transaction ct 
+                WHERE ct.receiverId = p.userId 
+                  AND ct.coinCount = p.coinCount 
+                  AND DATE(ct.transactionDate) = DATE(p.createdAt)
+              )
+          ) AS totalCombined
+        `;
+        countParams = [userID, userID, userID];
+      }
+
+      const unifiedTransactions = await sqlQuery(sql, params);
+      const totalCountResult = await sqlQuery(countSql, countParams);
       const totalCount = totalCountResult[0]?.totalCount || 0;
-      const haveMore = (offset + limit) < totalCount;
+      const haveMore = offset + limit < totalCount;
 
       return res.status(200).json({
         status: true,
         totalTransactions: totalCount,
         data: unifiedTransactions.map((row, index) => {
-          let transactionType = "";
-          let transactionLabel = "";
+          let transactionType = '';
+          let transactionLabel = '';
 
           if (row.senderId === userID) {
-            transactionType = "sent";
+            transactionType = 'sent';
             transactionLabel = `Sent to ${row.receiverFirstName}`;
           } else if (
             row.receiverId === userID &&
-            (row.senderId === "STORE" ||
-              row.senderFirstName === "Store" ||
-              row.senderId === "Purchased from Store")
+            (row.senderId === 'STORE' || row.senderFirstName === 'Store')
           ) {
-            if (row.status === "completed") {
-              transactionType = "received";
-              transactionLabel = "Purchased from Store";
-            } else {
-              transactionType = "pending";
-              transactionLabel = "Pending Purchase";
-            }
+            transactionType =
+              row.status === 'completed' || row.status === 'success'
+                ? 'received'
+                : 'pending';
+            transactionLabel =
+              row.status === 'completed' || row.status === 'success'
+                ? 'Purchased from Store'
+                : 'Pending Purchase';
           } else if (row.receiverId === userID) {
-            transactionType = "received";
+            transactionType = 'received';
             transactionLabel = `Received from ${row.senderFirstName}`;
           }
 
@@ -115,12 +159,13 @@ module.exports = () => {
               ? { haveMore, totalCount }
               : {}),
           };
-        })
+        }),
       });
-
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ status: false, msg: "Internal Server Error" });
+      return res
+        .status(500)
+        .json({ status: false, msg: 'Internal Server Error' });
     }
   };
 };

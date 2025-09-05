@@ -55,7 +55,7 @@ module.exports = () => {
         await sqlQuery('ROLLBACK');
         return res.status(400).json({
           status: false,
-          msg: `Sender only has ${coinsToTransfer.length} coins available`
+          msg: `You only have ${coinsToTransfer.length} coins available`
         });
       }
 

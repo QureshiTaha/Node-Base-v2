@@ -114,7 +114,7 @@ module.exports = (dependencies) => {
             const user = await userUseCase.getUserByUserEmail(payload.email);
             console.log("user", user);
 
-            if (user.length === 0) {
+            if (user.length === 0 || !user.status) {
                 let savedImage = '';
                 if (payload.picture) {
                     savedImage = await saveImage(payload.picture, payload.sub);
@@ -124,9 +124,10 @@ module.exports = (dependencies) => {
             }
 
             let NewUser = await userUseCase.getUserByUserEmail(payload.email);
-            if (NewUser.length) {
+            if (NewUser.length ) {
                 NewUser = NewUser[0];
             }
+            
             // Respond with user data
             let userData = { ...NewUser, googleID: payload.sub }
             const accessToken = jwt.sign({ id: NewUser.userID }, process.env.JWT_SECRET, {

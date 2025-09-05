@@ -340,7 +340,7 @@ module.exports = {
         `SELECT coinStoreId FROM db_coin_store WHERE ownerId=? LIMIT ? FOR UPDATE`,
         [senderId, numCount]
       );
-      if (coinsToTransfer.length < numCount) throw new Error(`Sender only has ${coinsToTransfer.length} coins available`);
+      if (coinsToTransfer.length < numCount) throw new Error(`You only have ${coinsToTransfer.length} coins available`);
 
       const coinIds = coinsToTransfer.map(c => c.coinStoreId);
 

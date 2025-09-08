@@ -58,7 +58,7 @@ module.exports = () => {
               IFNULL(receiver.userSurname, '') AS receiverSurname,
               MAX(ct.transactionDate) AS transactionDate,
               SUM(ct.coinCount) AS coinCount,
-              ct.status AS status,
+              MAX(ct.status) AS status,
               NULL AS paymentType
             FROM db_coin_transaction ct
             LEFT JOIN db_users sender ON ct.senderId = sender.userID

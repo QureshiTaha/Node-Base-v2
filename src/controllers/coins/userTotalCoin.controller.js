@@ -1,4 +1,5 @@
 const { sqlQuery } = require('../../Modules/sqlHandler');
+const { totalUserCoinsCount } = require('./coinUseCase');
 
 module.exports = () => {
   return async (req, res) => {
@@ -18,16 +19,8 @@ module.exports = () => {
 
     try {
       const [userInfo] = await sqlQuery(
-        `SELECT 
-           u.userID, 
-           u.userFirstName, 
-           u.userSurname, 
-           u.userPhone,
-           COUNT(cs.id) AS totalCoins
-         FROM db_users u
-         LEFT JOIN db_coin_store cs ON u.userID = cs.ownerId
-         WHERE u.userID = ?
-         GROUP BY u.userID, u.userFirstName, u.userSurname, u.userPhone`,
+        `SELECT *
+         FROM db_users WHERE userID = ?`,
         [userID]
       );
 
@@ -48,7 +41,7 @@ module.exports = () => {
         [userID, _limit, offset]
       );
 
-      const totalCount = userInfo.totalCoins;
+      const totalCount = await totalUserCoinsCount({userID});
       const totalPages = Math.ceil(totalCount / _limit);
       const haveMore = _page < totalPages;
 
@@ -61,7 +54,7 @@ module.exports = () => {
           surname: userInfo.userSurname,
           phone: userInfo.userPhone,
         },
-        totalCoins: userInfo.totalCoins,
+        totalCoins: totalCount,
         coins,
         pagination: {
           page: _page,

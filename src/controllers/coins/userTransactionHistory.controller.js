@@ -127,36 +127,76 @@ module.exports = () => {
       return res.status(200).json({
         status: true,
         totalTransactions: totalCount,
-        data: unifiedTransactions.map((row, index) => {
-          let transactionType = '';
-          let transactionLabel = '';
+       data: unifiedTransactions.map((row, index) => {
+  let transactionType = '';
+  let transactionLabel = '';
 
-          if (row.senderId === userID) {
-            transactionType = 'sent';
-            transactionLabel = `Sent to ${row.receiverFirstName}`;
-          } else if (
-            row.receiverId === userID &&
-            (row.senderId === 'STORE' || row.senderFirstName === 'Store')
-          ) {
-            transactionType =
-              row.status === 'completed' || row.status === 'success'
-                ? 'received'
-                : 'pending';
-            transactionLabel =
-              row.status === 'completed' || row.status === 'success'
-                ? 'Purchased from Store'
-                : 'Pending Purchase';
-          } else if (row.receiverId === userID) {
-            transactionType = 'received';
-            transactionLabel = `Received from ${row.senderFirstName}`;
-          }
+  const isStore = row.senderId === 'STORE' || row.senderFirstName === 'Store';
+  const st = String(row.status || '').toLowerCase();
 
-          return {
-            ...row,
-            transactionType,
-            transactionLabel,
-            ...(index === unifiedTransactions.length - 1
-              ? { haveMore, totalCount }
+  // 🔹 Withdrawals (db_coin_payments with paymentType = 'debit')
+  if (row.paymentType === 'debit' && row.receiverId === userID && isStore) {
+    switch (st) {
+      case 'processing':
+        transactionType = 'pending';
+        transactionLabel = 'Withdrawal Processing';
+        break;
+      case 'cancelled':
+        transactionType = 'cancelled';
+        transactionLabel = 'Withdrawal Cancelled';
+        break;
+      case 'failed':
+      case 'withdraw-failed':
+        transactionType = 'withdraw-failed';
+        transactionLabel = 'Withdrawal Failed';
+        break;
+      case 'success':
+      case 'withdraw-success':
+        transactionType = 'withdraw-success';
+        transactionLabel = 'Withdrawal Completed';
+        break;
+      default:
+        transactionType = 'pending';
+        transactionLabel = 'Withdrawal';
+        break;
+    }
+  }
+  // 🔹 Normal send (user sent coins to someone)
+  else if (row.senderId === userID) {
+    transactionType = 'sent';
+    transactionLabel = `Sent to ${row.receiverFirstName}`;
+  }
+  // 🔹 Purchases/Top-ups from Store (credits)
+  else if (row.receiverId === userID && isStore) {
+    if (st === 'success' || st === 'completed') {
+      transactionType = 'received';
+      transactionLabel = 'Purchased from Store';
+    } else if (st === 'processing') {
+      transactionType = 'pending';
+      transactionLabel = 'Pending Purchase';
+    } else if (st === 'failed') {
+      transactionType = 'failed';
+      transactionLabel = 'Purchase Failed';
+    } else if (st === 'cancelled') {
+      transactionType = 'cancelled';
+      transactionLabel = 'Purchase Cancelled';
+    } else {
+      transactionType = 'received';
+      transactionLabel = 'Purchase';
+    }
+  }
+  // 🔹 Normal receive (user received coins from another user)
+  else if (row.receiverId === userID) {
+    transactionType = 'received';
+    transactionLabel = `Received from ${row.senderFirstName}`;
+  }
+
+  return {
+    ...row,
+    transactionType,
+    transactionLabel,
+    ...(index === unifiedTransactions.length - 1
+      ? { haveMore, totalCount }
               : {}),
           };
         }),

@@ -49,8 +49,6 @@ module.exports = (dependencies) => {
                 });
             }
 
-
-
             const paymentRequest = {
                 "mid": MERCHANT_ID,
                 "enckey": ENCRYPTION_KEY,
@@ -61,9 +59,9 @@ module.exports = (dependencies) => {
                 "emailId": `${emailId}`,
                 "dateOfReg": new Date().toISOString().split('T')[0],
                 "customerVpa": 'quershi.t2000-1@okaxis',
-                "name": `${user.userFirstName} ${user.userSurname}`,
+                "name": `${user.data.userFirstName} ${user.data.userSurname}`,
                 "userId": userID,
-                "mobileNo": user.userPhone || "0000000000",
+                "mobileNo": user.data.userPhone || "0000000000",
                 "respUrl": CALLBACK_URL,
                 "udf1": `${offerId}`,
                 "udf2": "string",

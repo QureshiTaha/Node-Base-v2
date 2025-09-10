@@ -144,13 +144,12 @@ module.exports = {
       if (coinsResult.length === 0) throw new Error('No coins available in stock');
       if (coinsResult.length < count) throw new Error(`Only ${coinsResult.length} coins available`);
 
-      const payTranId = uuidv4();
+
       const coinStoreIds = coinsResult.map(c => c.coinStoreId);
       const placeholders = coinStoreIds.map(() => '?').join(',');
 
       const paymentId = uuidv4();
       const transactionId = uuidv4();
-      const paymentMethod = 'internal';
 
       await sqlQuery('START TRANSACTION');
       transactionStarted = true;
@@ -159,10 +158,9 @@ module.exports = {
         `UPDATE db_coin_store 
          SET ownerId = ?, transactionId = ?, purchasedAt = NOW() 
          WHERE coinStoreId IN (${placeholders})`,
-        [userID, payTranId, ...coinStoreIds]
+        [userID, transactionId, ...coinStoreIds]
       );
 
-      const coinTransactionId = uuidv4();
       const senderId = 'Purchased from Store';
       // const orderNo = uuidv4();
 
@@ -174,7 +172,7 @@ module.exports = {
         (coinTransactionId, orderNo, status, senderId, receiverId, coinCount, amount, transactionDate, metaData)
         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
         [
-          coinTransactionId,
+          transactionId,
           orderNo,
           'processing',
           senderId,

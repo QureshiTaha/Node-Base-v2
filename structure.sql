@@ -198,7 +198,7 @@ CREATE TABLE
         `id` INT (11) NOT NULL AUTO_INCREMENT,
         `coinTransactionId` CHAR(36) NOT NULL,
         `orderNo` VARCHAR(36) NOT NULL,
-        `status` enum ('processing', 'cancelled', 'failed', 'success', 'withdraw-success', 'withdraw-failed') NOT NULL DEFAULT 'processing',
+        `status` VARCHAR(20) DEFAULT 'processing',
         `senderId` VARCHAR(255) NOT NULL,
         `receiverId` VARCHAR(255) NOT NULL,
         `coinCount` INT (11) NOT NULL,

@@ -30,6 +30,19 @@ module.exports = (dependencies) => {
 
             const parsedData = JSON.parse(decrypt);
             console.log('parsedData', parsedData)
+            // Get transaction details by orderId
+            const [transaction] = await sqlQuery(
+                `SELECT * FROM db_coin_transaction WHERE orderNo = ?`,
+                [parsedData.orderNo]
+            );
+            console.log("senderId going into payments:", transaction);
+            if (!transaction) {
+                return res.status(404).json({
+                    status: false,
+                    msg: "Transaction not found",
+                });
+            }
+
             await sqlQuery(
                 `UPDATE db_coin_transaction 
                 SET coinTransactionId = ?, status = ?, metaData = ?
@@ -41,21 +54,6 @@ module.exports = (dependencies) => {
                     parsedData.orderNo
                 ]
             );
-
-            const [transaction] = await sqlQuery(
-                `SELECT * FROM db_coin_transaction WHERE orderNo = ?`,
-                [parsedData.orderNo]
-            );
-
-            console.log("senderId going into payments:", transaction);
-
-            if (!transaction) {
-                return res.status(404).json({
-                    status: false,
-                    msg: "Transaction not found",
-                });
-            }
-
             const [coinStore] = await sqlQuery(
                 `SELECT * FROM db_coin_store WHERE transactionId = ? OR ownerId IS NULL LIMIT 1`,
                 [transaction.coinTransactionId]

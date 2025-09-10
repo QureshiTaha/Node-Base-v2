@@ -2,8 +2,8 @@ const { sqlQuery } = require('../../Modules/sqlHandler');
 
 module.exports = () => {
   return async (req, res) => {
-    const { userID, page, limit } = req.params;
-
+    const { userID } = req.params;
+    const { page, limit } = req.query;
     if (!userID) {
       return res.status(400).json({
         status: false,
@@ -12,7 +12,7 @@ module.exports = () => {
     }
 
     const _page = parseInt(page) || 1;
-    const _limit = parseInt(limit) || 30;
+    const _limit = parseInt(limit) || 10;
     const offset = (_page - 1) * _limit;
 
     try {
@@ -34,16 +34,23 @@ module.exports = () => {
       }
 
       const followersList = await sqlQuery(
-        `
-        SELECT 
-          u.userID, u.userFirstName, u.userSurname, u.userPhone, u.userEmail, u.profilePic, u.userGender
+        `SELECT 
+          u.userID,
+          u.userFirstName,
+          u.userSurname,
+          u.profilePic,
+          EXISTS (
+            SELECT 1 
+            FROM db_followers 
+            WHERE followBy = ? AND followTo = u.userID
+          ) AS isFollowing
         FROM db_followers f
-        JOIN db_users u ON f.followBy = u.userID
+        JOIN db_users u ON u.userID = f.followBy
         WHERE f.followTo = ?
         ORDER BY f.followAt DESC
         LIMIT ? OFFSET ?
-      `,
-        [userID, _limit, offset]
+        `,
+        [userID, userID, _limit, offset]
       );
 
       if (followersList.length > 0) {

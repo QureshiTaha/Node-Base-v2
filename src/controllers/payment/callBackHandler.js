@@ -65,8 +65,8 @@ module.exports = (dependencies) => {
                 await sqlQuery(
                     `UPDATE db_coin_store
                     SET ownerId = ?, transactionId = ?
-                    WHERE coinStoreId = ?`,
-                    [transaction.receiverId, parsedData.txnId, coinStore.coinStoreId]
+                    WHERE transactionId = ?`,
+                    [transaction.receiverId, parsedData.txnId, transaction.coinTransactionId]
                 );
             }
 

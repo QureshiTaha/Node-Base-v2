@@ -1,4 +1,5 @@
 const { sqlQuery } = require('../../Modules/sqlHandler');
+const { myConsole } = require('../../utils/myConsole');
 
 module.exports = () => {
   return async (req, res) => {
@@ -131,11 +132,16 @@ module.exports = () => {
   let transactionType = '';
   let transactionLabel = '';
 
-  const isStore = row.senderId === 'STORE' || row.senderFirstName === 'Store';
+  const senderIdLower = String(row.senderId || '').toLowerCase();
+  const isStore =
+    senderIdLower === 'store' || senderIdLower === 'purchased from store';
   const st = String(row.status || '').toLowerCase();
+  const isWithdrawalRow =
+    senderIdLower === 'withdraw' ||
+    String(row.paymentType || '').toLowerCase() === 'debit';
 
   // 🔹 Withdrawals (db_coin_payments with paymentType = 'debit')
-  if (row.paymentType === 'debit' && row.receiverId === userID && isStore) {
+  if (isWithdrawalRow && row.receiverId === userID) {
     switch (st) {
       case 'processing':
         transactionType = 'pending';
@@ -161,12 +167,25 @@ module.exports = () => {
         break;
     }
   }
-  // 🔹 Normal send (user sent coins to someone)
+  // 🔹 P2P send (you sent coins to someone) — respect status
   else if (row.senderId === userID) {
-    transactionType = 'sent';
-    transactionLabel = `Sent to ${row.receiverFirstName}`;
+    if (st === 'success' || st === 'completed') {
+      transactionType = 'sent';
+      transactionLabel = `Sent to ${row.receiverFirstName}`;
+    } else if (st === 'processing' || st === 'pending') {
+      transactionType = 'pending';
+      transactionLabel = `Sending to ${row.receiverFirstName}`;
+    } else if (st === 'failed') {
+      transactionType = 'failed';
+      transactionLabel = `Send failed to ${row.receiverFirstName}`;
+    } else if (st === 'cancelled') {
+      transactionType = 'cancelled';
+      transactionLabel = `Send cancelled to ${row.receiverFirstName}`;
+    } else {
+      transactionType = 'sent';
+      transactionLabel = `Sent to ${row.receiverFirstName}`;
+    }
   }
-  // 🔹 Purchases/Top-ups from Store (credits)
   else if (row.receiverId === userID && isStore) {
     if (st === 'success' || st === 'completed') {
       transactionType = 'received';
@@ -185,10 +204,24 @@ module.exports = () => {
       transactionLabel = 'Purchase';
     }
   }
-  // 🔹 Normal receive (user received coins from another user)
-  else if (row.receiverId === userID) {
-    transactionType = 'received';
-    transactionLabel = `Received from ${row.senderFirstName}`;
+  // 🔹 Incoming P2P (non-store) transfers to this user
+  else if (row.receiverId === userID && !isStore) {
+    if (st === 'success' || st === 'completed') {
+      transactionType = 'received';
+      transactionLabel = `Received from ${row.senderFirstName}`;
+    } else if (st === 'processing' || st === 'pending') {
+      transactionType = 'pending';
+      transactionLabel = `Pending from ${row.senderFirstName}`;
+    } else if (st === 'failed') {
+      transactionType = 'failed';
+      transactionLabel = `Transfer Failed from ${row.senderFirstName}`;
+    } else if (st === 'cancelled') {
+      transactionType = 'cancelled';
+      transactionLabel = `Transfer Cancelled from ${row.senderFirstName}`;
+    } else {
+      transactionType = 'received';
+      transactionLabel = `From ${row.senderFirstName}`;
+    }
   }
 
   return {

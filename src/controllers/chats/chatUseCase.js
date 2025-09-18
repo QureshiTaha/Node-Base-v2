@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { sqlQuery } = require('../../Modules/sqlHandler');
 const moment = require('moment');
-
+const notification = require('../../Modules/notification');
 module.exports = {
   sendMessage: async (data) => {
     const { senderID, receiverID, chatID, message, messageType } = data;
@@ -10,26 +10,41 @@ module.exports = {
       const messageID = uuidv4();
       const result = await sqlQuery(
         `INSERT INTO db_chat_messages (messageID, senderID, receiverID, chatID, message, messageType) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?)`,
         [messageID, senderID, receiverID, chatID, message, messageType]
       );
-      if (result)
+
+      if (result) {
+        const messageData = {
+          messageID,
+          senderID,
+          receiverID,
+          chatID,
+          message,
+          messageType,
+          isRead: 0,
+          timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
+        };
+
+        await notification.push({
+          userID: receiverID,
+          title: 'New Message',
+          body: message,
+          data: {
+            type: 'chat',
+            chatID,
+            senderID,
+            messageID
+          }
+        });
+
         return {
           success: true,
           message: 'Message Sent Successfully',
-          data: [
-            {
-              messageID,
-              senderID,
-              receiverID,
-              chatID,
-              message,
-              messageType,
-              isRead: 0,
-              timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
-            }
-          ]
+          data: [messageData]
         };
+      }
+
       return { success: false, message: 'something Went wrong While SQL Query', data: [] };
     } catch (error) {
       console.error('Error sending msg:', error);

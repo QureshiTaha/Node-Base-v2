@@ -37,7 +37,7 @@ router.route('/allUsers').get(verifyToken, getAllUsersController);
 router.route('/getUserByEmail/:userEmail').get(getUserByUserEmailController);
 router.route('/getUserByPhone/:userPhone').get(getUserByUserPhoneController);
 router.route('/update-user').post(editUserController);
-router.route('/test').get(testingController);
+router.route('/notify/:userID').get(testingController);
 router.route('/by-userID/:userID').get(getUserByUserIdController);
 router.route('/forgot-password').post(forgotPasswordController);
 router.route('/verify-otp').post(verifyOtpController);

@@ -14,8 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
 const http = require('http');
-// var admin = require('firebase-admin');
-// var serviceAccount = require('../taskmanagement-iceweb-firebase-adminsdk-fbsvc-d1d1672345.json');
+var admin = require('firebase-admin');
+var serviceAccount = require('../blush-iceweb-firebase-adminsdk-fbsvc-c1a9b5d169.json');
 const Mail = require('./Modules/email');
 const {initializeSocket} = require('./Modules/socketManager');
 
@@ -33,9 +33,9 @@ module.exports = {
       console.log('Logging disabled');
     }
 
-    // admin.initializeApp({
-    //   credential: admin.credential.cert(serviceAccount)
-    // });
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
 
     const corsOptions = {
       origin: '*',

@@ -14,7 +14,9 @@ module.exports = (dependencies) => {
       var allReels = await sqlQuery(
         `SELECT db_reels.*,db_users.profilePic,CONCAT(db_users.userFirstName," ",db_users.userSurname) as userName FROM db_reels   
           JOIN db_users on db_users.userID = db_reels.userID
-          WHERE description like '%${_search}%' LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`
+          WHERE description like '%${_search}%'
+          ORDER BY db_reels.timeStamp DESC
+          LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`
       );
 
       var totalCount = await sqlQuery(`SELECT count(1) as count FROM db_reels WHERE title like '%${_search}%'`);

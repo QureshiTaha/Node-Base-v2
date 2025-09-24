@@ -3,12 +3,11 @@ sqlQuery = sql.query;
 const moment = require('moment');
 const bcrypt = require('bcrypt');
 
-
 /**
-* hashPassword function to hash encrypt the password
-* @param {*} userPassword
-* @returns
-*/
+ * hashPassword function to hash encrypt the password
+ * @param {*} userPassword
+ * @returns
+ */
 async function hashPassword(userPassword) {
   const password = userPassword;
   const saltRounds = 10;
@@ -113,15 +112,14 @@ module.exports = {
   },
   getUserByUserEmail: async function (userEmail) {
     try {
-      const result = await sqlQuery(
-        `SELECT * FROM db_users WHERE userEmail = ? AND userDeleted IS NULL LIMIT 1`,
-        [userEmail]
-      );
+      const result = await sqlQuery(`SELECT * FROM db_users WHERE userEmail = ? AND userDeleted IS NULL LIMIT 1`, [
+        userEmail
+      ]);
 
       if (!result || result.length === 0) {
         return {
           status: false,
-          message: "User not found",
+          message: 'User not found'
         };
       }
 
@@ -129,14 +127,13 @@ module.exports = {
 
       return {
         status: true,
-        data: safeUser,
+        data: safeUser
       };
-
     } catch (error) {
       return {
         status: false,
-        message: "Database error",
-        error: error.message,
+        message: 'Database error',
+        error: error.message
       };
     }
   },
@@ -149,7 +146,7 @@ module.exports = {
       return error;
     }
   },
-  getAllUsers: async function (search = "", limit = 10, offset = 0) {
+  getAllUsers: async function (search = '', limit = 10, offset = 0) {
     try {
       const searchQuery = `%${search}%`;
 
@@ -161,6 +158,7 @@ module.exports = {
               OR userEmail LIKE ? 
               OR userPhone LIKE ?)
        AND (userDeleted IS NULL OR userDeleted != 1)
+       ORDER BY totalFollowers DESC, followings DESC
        LIMIT ? OFFSET ?`,
         [searchQuery, searchQuery, searchQuery, limit, offset]
       );
@@ -183,8 +181,8 @@ module.exports = {
       console.error(error);
       throw error;
     }
-  }
-  ,
+  },
+
   checkIfExist: async function (userID) {
     try {
       const query = `SELECT count(1) as count FROM db_users WHERE userID =  ? AND (userDeleted IS NULL OR userDeleted != 1)`;

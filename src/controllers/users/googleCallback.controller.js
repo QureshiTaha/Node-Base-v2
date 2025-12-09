@@ -1,6 +1,6 @@
 
 // ⚙️ Creds In future move to ENV
-const CLIENT_ID = '583864958599-rq6g914k9ffncjphlil70j8asjnrmotg.apps.googleusercontent.com';
+const CLIENT_ID = '242615216218-7oqfjrdn5tlvo5cd7bb78a38tu2d92f8.apps.googleusercontent.com';
 const CLIENT_SECRET = process.env.GOOGLE_SECRET || ''; // from Google Console
 const REDIRECT_URI = 'http://localhost:3000/auth/google/callback'; // or your domain
 const DEEP_LINK_URI = 'myapp://login';
@@ -21,7 +21,10 @@ module.exports = (dependencies) => {
             const id_token = tokenRes.data.id_token;
             const ticket = await client.verifyIdToken({
                 idToken: id_token,
-                audience: CLIENT_ID,
+                audience: [
+                "242615216218-7oqfjrdn5tlvo5cd7bb78a38tu2d92f8.apps.googleusercontent.com",
+                "242615216218-n80c6lutmujsoki0s5qbr01lf8g5vllg.apps.googleusercontent.com"
+            ],
             });
 
             const payload = ticket.getPayload();

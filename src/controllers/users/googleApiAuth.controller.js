@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 // ⚙️ Creds In future move to ENV
-const CLIENT_ID = '715055673513-j69r1emipult6kbovbv0t2da7ots0i03.apps.googleusercontent.com';
+const CLIENT_ID = '242615216218-7oqfjrdn5tlvo5cd7bb78a38tu2d92f8.apps.googleusercontent.com';
 const client = new OAuth2Client(CLIENT_ID);
 
 // Function to save user image from URL to disk
@@ -63,19 +63,28 @@ const insertNewUser = async (payload, imagePath) => {
     const userSurname = payload.family_name || '';
     const userID = uuidv4();
 
-    const query = `
-        INSERT INTO db_users (userID,userEmail, userFirstName, userSurname, profilePic, userPassword,userMeta)
-        VALUES (?, ?,?, ?, ?, ?, ?)
+const query = `
+        INSERT INTO db_users (
+            userID, userEmail, userFirstName, userSurname, profilePic,
+            userPassword, userMeta, userAddressLine1, userAddressLine2, userAddressPostcode
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const values = [
-        userID,
-        payload.email,
-        userFirstName,
-        userSurname,
-        imagePath,
-        userHashedPassword,
-        JSON.stringify({ ...payload, imagePath: imagePath })
-    ];
+
+
+const values = [
+    userID,
+    payload.email,
+    userFirstName,
+    userSurname,
+    imagePath,
+    userHashedPassword,
+    JSON.stringify({ ...payload, imagePath }),
+    '', // userAddressLine1
+    '', // userAddressLine2
+    ''  // userAddressPostcode
+];
+
 
     console.log("Sending Mail...");
     await Mail.send({
@@ -101,7 +110,10 @@ module.exports = (dependencies) => {
             // Verify the Google token
             const ticket = await client.verifyIdToken({
                 idToken: credential,
-                audience: CLIENT_ID
+                audience: [
+                "242615216218-7oqfjrdn5tlvo5cd7bb78a38tu2d92f8.apps.googleusercontent.com",
+                "242615216218-n80c6lutmujsoki0s5qbr01lf8g5vllg.apps.googleusercontent.com"
+            ],
             });
 
             const payload = ticket.getPayload();

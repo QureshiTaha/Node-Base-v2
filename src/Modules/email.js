@@ -9,8 +9,10 @@ module.exports = {
           nodemailer.createTransport({
             service: 'gmail',
             auth: {
-              user: 'lincpaysolution+noreply@gmail.com',
-              pass: 'fvya yykr sqwe pccm'
+              user: 'digitalelpis009+noreply@gmail.com',
+              pass: 'grzk etqn ndws uoaj'
+              // user: 'lincpaysolution+noreply@gmail.com',
+              // pass: 'fvya yykr sqwe pccm'
             }
           }) :
           nodemailer.createTransport({
@@ -20,7 +22,7 @@ module.exports = {
             auth: {
               // user: process.env.NODEMAILER_EMAIL ||  'taskmanagement@iceweb.in',
               user: process.env.NODEMAILER_EMAIL || 'taskmanagement@iceweb.in',
-              pass: process.env.NODEMAILER_KEY || 'fvya yykr sqwe pccm'
+              pass: process.env.NODEMAILER_KEY || 'grzk etqn ndws uoaj'
             },
             tls: {
               rejectUnauthorized: false
@@ -39,7 +41,7 @@ module.exports = {
       }
 
       const mailOptions = {
-        from: mailerType == 1 ? 'noreply@Blush <lincpaysolution+noreply@gmail.com>' : 'noreply@Blush <taskmanagement@iceweb.in>',
+        from: mailerType == 1 ? 'noreply@Blush <digitalelpis009+noreply@gmail.com>' : 'noreply@Blush <taskmanagement@iceweb.in>',
         to: receiverEmail.toString().trim(),
         subject: subject || '📩 Message from Blush',
         headers: {

@@ -253,7 +253,7 @@ CREATE TABLE
         `amount` DECIMAL(10, 2) NOT NULL,
         `coinCount` INT (11) DEFAULT 0,
         `paymentMethod` VARCHAR(50) DEFAULT NULL,
-        `paymentType` enum ('credit', 'debit', '', '') DEFAULT NULL,
+        `paymentType` enum ('credit', 'debit', '') DEFAULT NULL,
         `status` VARCHAR(20) DEFAULT 'pending',
         `transactionId` VARCHAR(100) DEFAULT NULL,
         `createdAt` datetime DEFAULT CURRENT_TIMESTAMP(),

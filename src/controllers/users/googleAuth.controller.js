@@ -1,7 +1,7 @@
 const querystring = require('querystring');
 
 // ⚙️ Creds In future move to ENV
-const CLIENT_ID = '715055673513-j69r1emipult6kbovbv0t2da7ots0i03.apps.googleusercontent.com';
+const CLIENT_ID = '242615216218-7oqfjrdn5tlvo5cd7bb78a38tu2d92f8.apps.googleusercontent.com';
 const REDIRECT_URI = 'http://localhost:5000/api/v1/users/google-callback'; // or your domain
 
 

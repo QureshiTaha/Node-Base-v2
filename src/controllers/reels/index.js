@@ -9,6 +9,7 @@ const addCommentsController = require('./addComments.controller');
 const deleteCommentsController = require('./deleteComments.controller');
 const interactionStatusController = require('./InteractionStatus.controller');
 const getAllCommentsController = require('./getAllComments.controller');
+const editCommentsController = require('./editComments.controller');
 
 
 module.exports = (dependencies) => {
@@ -24,5 +25,6 @@ module.exports = (dependencies) => {
     deleteCommentsController: deleteCommentsController(dependencies),
     interactionStatusController: interactionStatusController(dependencies),
     getAllCommentsController: getAllCommentsController(dependencies),
+    editCommentsController: editCommentsController(dependencies),
   };
 };

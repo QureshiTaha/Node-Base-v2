@@ -11,6 +11,7 @@ const {
   dislikeReelController,
   addCommentsController,
   deleteCommentsController,
+  editCommentsController,
   interactionStatusController,
   getAllCommentsController,
 } = reelsController();
@@ -26,6 +27,7 @@ router.route('/like').post(likeReelController);
 router.route('/dislike').post(dislikeReelController);
 router.route('/add-comment').post(addCommentsController);
 router.route('/delete-comment').post(deleteCommentsController);
+router.route('/edit-comment').put(editCommentsController);
 router.route('/interaction-status/:reelId/:userID').get(interactionStatusController);
 router.route('/get-all-comments/:reelId').get(getAllCommentsController);
 

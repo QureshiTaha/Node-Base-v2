@@ -20,8 +20,10 @@ function decryptString(base64Data, key) {
 }
 
 module.exports = {
-  MERCHANT_ID: 'SLCOS00054BHO',
-  ENCRYPTION_KEY: 'ovnusv5r5crakbr9nghqmb1kcjmgncog',
+  // MERCHANT_ID: 'SLCOS00054BHO',
+  MERCHANT_ID: 'SLCOS00018MUM',
+  // ENCRYPTION_KEY: 'ovnusv5r5crakbr9nghqmb1kcjmgncog',
+  ENCRYPTION_KEY: 'przrmdgi3muwpnm2qbnraj0ahy921rh4',
   PAYMENT_BASE_URL: 'https://pg.solwio.in/paymentrequest/seamless',
   PAYOUT_BASE_URL: 'https://payout.solwio.in/core-banking/initiate-payout',
   CALLBACK_URL: 'https://api-dating-app.iceweb.in/api/v1/payment/callback', // Update to your domain
